@@ -45,5 +45,5 @@ class Main {
 
 (async () => {
   const main = new Main();
-  await main.start();
+  await main.start().catch((err) => console.error('Shit went wrong', err));
 })();
