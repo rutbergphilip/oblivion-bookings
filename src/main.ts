@@ -1,4 +1,6 @@
-import { Client, Intents } from 'discord.js';
+import { ButtonFactory } from './events/interactions/button/button.factory';
+import { RequestEmbedBuilder } from './build/requestEmbed.build';
+import { Client, Intents, ButtonInteraction } from 'discord.js';
 import { REST } from '@discordjs/rest';
 import { Routes } from 'discord-api-types/v9';
 import { ActivityTypes } from 'discord.js/typings/enums';
@@ -17,6 +19,7 @@ class Main {
         Intents.FLAGS.GUILD_MEMBERS,
         Intents.FLAGS.GUILD_PRESENCES,
         Intents.FLAGS.GUILD_MESSAGES,
+        Intents.FLAGS.GUILD_INVITES,
         Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
         Intents.FLAGS.GUILD_INTEGRATIONS,
       ]),
@@ -31,12 +34,32 @@ class Main {
         type: ActivityTypes.STREAMING,
       });
 
+      await RequestEmbedBuilder.build(this.client);
+
       console.log('Ready!');
       this.client.user.setActivity({
         name: 'Making your life easier...',
         type: ActivityTypes.COMPETING,
       });
     });
+
+    this.client.on('interactionCreate', async (interaction) => {
+      console.log('Interaction created!');
+      const factory = new ButtonFactory();
+      switch (true) {
+        case interaction.isButton():
+          await factory.allocateTask(interaction as ButtonInteraction);
+          break;
+      }
+    });
+
+    this.client.on('messageCreate', async (message) => {
+      console.log('Message created!');
+      if (message.partial) {
+        message = await message.fetch();
+      }
+    });
+
     this.client
       .login(process.env.DISCORD_TOKEN)
       .catch((err) => console.error('Shit went wrong', err));

@@ -9,25 +9,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const button_factory_1 = require("./events/interactions/button/button.factory");
+const requestEmbed_build_1 = require("./build/requestEmbed.build");
 const discord_js_1 = require("discord.js");
 const rest_1 = require("@discordjs/rest");
 require('dotenv').config();
-// const client = new Client({
-//   restTimeOffset: 0,
-//   intents: new Intents([
-//     Intents.FLAGS.GUILDS,
-//     Intents.FLAGS.GUILD_MEMBERS,
-//     Intents.FLAGS.GUILD_PRESENCES,
-//     Intents.FLAGS.GUILD_MESSAGES,
-//     Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
-//     Intents.FLAGS.GUILD_INTEGRATIONS,
-//   ]),
-//   partials: ['MESSAGE', 'CHANNEL', 'REACTION'],
-// });
-// client.on('ready', () => {
-//   console.log('Ready!');
-// });
-// client.login(process.env.DISCORD_TOKEN);
 class Main {
     constructor() {
         this.rest = new rest_1.REST({ version: '9' }).setToken(process.env.DISCORD_TOKEN);
@@ -38,6 +24,7 @@ class Main {
                 discord_js_1.Intents.FLAGS.GUILD_MEMBERS,
                 discord_js_1.Intents.FLAGS.GUILD_PRESENCES,
                 discord_js_1.Intents.FLAGS.GUILD_MESSAGES,
+                discord_js_1.Intents.FLAGS.GUILD_INVITES,
                 discord_js_1.Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
                 discord_js_1.Intents.FLAGS.GUILD_INTEGRATIONS,
             ]),
@@ -51,11 +38,27 @@ class Main {
                     name: 'Starting...',
                     type: 1 /* STREAMING */,
                 });
+                yield requestEmbed_build_1.RequestEmbedBuilder.build(this.client);
                 console.log('Ready!');
                 this.client.user.setActivity({
-                    name: 'making your life easier...',
+                    name: 'Making your life easier...',
                     type: 5 /* COMPETING */,
                 });
+            }));
+            this.client.on('interactionCreate', (interaction) => __awaiter(this, void 0, void 0, function* () {
+                console.log('Interaction created!');
+                const factory = new button_factory_1.ButtonFactory();
+                switch (true) {
+                    case interaction.isButton():
+                        yield factory.allocateTask(interaction);
+                        break;
+                }
+            }));
+            this.client.on('messageCreate', (message) => __awaiter(this, void 0, void 0, function* () {
+                console.log('Message created!');
+                if (message.partial) {
+                    message = yield message.fetch();
+                }
             }));
             this.client
                 .login(process.env.DISCORD_TOKEN)
