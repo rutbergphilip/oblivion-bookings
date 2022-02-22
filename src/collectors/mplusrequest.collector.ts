@@ -80,14 +80,4 @@ export class MythicPlusRequestCollector {
   }
 
   private async onStop(collected: Collection<string, Message<boolean>>) {}
-
-  // private buildKeyPicker(): MessageActionRow {
-  //   return new MessageActionRow()
-  //     .addComponents(
-  //       new MessageSelectMenu()
-  //       .setMaxValues(1)
-  //       .setMinValues(1)
-  //         .addOptions()
-  //     )
-  // }
 }
