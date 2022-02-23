@@ -49,20 +49,13 @@ export class HordeButton {
         ],
         components: components,
       });
-
-      const repository = new RequestRepository();
-      await repository.update({
-        ...entity,
-        ...{
-          requestId: ticketMessage.id,
-        },
-      });
+      ticketMessage.pin();
 
       await interaction.editReply({
         content: `${Emojis.SUCCESS} Request ticket created! ${ticketChannel}`,
       });
 
-      await new MythicPlusRequestCollector().start(interaction, ticketChannel);
+      await new MythicPlusRequestCollector(interaction, ticketMessage).start();
     } catch (error) {
       console.error(error);
     }
