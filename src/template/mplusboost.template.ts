@@ -8,46 +8,49 @@ import {
 } from 'discord.js';
 import { Factions } from './../constants/factions.enum';
 import { RequestTypes } from './../constants/request.enum';
-import { IMythicPlusBoost } from './../interfaces/mplusboost.interface';
+import {
+  IMythicPlusBoost,
+  IQueues,
+} from './../interfaces/mplusboost.interface';
 
-export class MythicPlusBoost implements IMythicPlusBoost {
+export class MythicPlusBoost {
   readonly type: RequestTypes;
   readonly faction: Factions;
   readonly customerId: string;
   readonly boostId: string | ObjectId;
   private timeout: NodeJS.Timeout;
-  picked?: {
-    teamLeaderId: string;
-    tankId: string;
-    healerId: string;
-    dpsOneId: string;
-    dpsTwoId: string;
-    keyHolderId: string;
-    handlerId: string;
+  picked? = {
+    teamLeaderId: '',
+    tankId: '',
+    healerId: '',
+    dpsOneId: '',
+    dpsTwoId: '',
+    keyHolderId: '',
+    handlerId: '',
   };
-  keyInfo?: {
-    keyLevel: string;
-    amountKeys: string;
-    armorStack: string;
-    timed: string;
-    keys: string;
-    paymentRealms: string;
-    notes: string;
+  keyInfo? = {
+    keyLevel: '',
+    amountKeys: '',
+    armorStack: '',
+    timed: '',
+    keys: '',
+    paymentRealms: '',
+    notes: '',
   };
-  queues?: {
-    teamLeaderQueue?: string[];
-    tankQueue: string[];
-    healerQueue: string[];
-    dpsQueue: string[];
-    keyHolderQueue: string[];
-    handlerQueue: string[];
+  queues?: IQueues = {
+    teamLeaderQueue: [],
+    tankQueue: [],
+    healerQueue: [],
+    dpsQueue: [],
+    keyHolderQueue: [],
+    handlerQueue: [],
   };
-  requestChannelId?: string;
-  signupsChannelId?: string;
-  isComplete: boolean;
-  isOpenForAll: boolean;
-  isTeamTaken?: boolean;
-  hasStarted?: boolean;
+  requestChannelId? = '';
+  signupsChannelId? = '';
+  isComplete = false;
+  isOpenForAll = false;
+  isTeamTaken? = false;
+  hasStarted? = false;
 
   constructor(
     type: RequestTypes,
@@ -57,36 +60,8 @@ export class MythicPlusBoost implements IMythicPlusBoost {
   ) {
     this.type = type;
     this.faction = faction;
-    this.isComplete = false;
-    this.isOpenForAll = false;
     this.customerId = customerId;
     this.boostId = boostId;
-    this.picked = {
-      teamLeaderId: '',
-      tankId: '',
-      healerId: '',
-      dpsOneId: '',
-      dpsTwoId: '',
-      keyHolderId: '',
-      handlerId: '',
-    };
-    this.keyInfo = {
-      keyLevel: '',
-      amountKeys: '',
-      armorStack: '',
-      timed: '',
-      keys: '',
-      paymentRealms: '',
-      notes: '',
-    };
-    this.queues = {
-      teamLeaderQueue: [],
-      tankQueue: [],
-      healerQueue: [],
-      dpsQueue: [],
-      keyHolderQueue: [],
-      handlerQueue: [],
-    };
   }
 
   throttle(message: Message) {

@@ -1,35 +1,34 @@
-import { MessageCollector } from 'discord.js';
+import { ObjectId } from 'mongodb';
 import { Factions } from '../constants/factions.enum';
 import { RequestTypes } from '../constants/request.enum';
 
 export interface IMythicPlusBoost {
+  type: RequestTypes;
   faction: Factions;
+  customerId: string;
+  boostId: string | ObjectId;
   isComplete: boolean;
   isOpenForAll: boolean;
+  isTeamTaken?: boolean;
+  hasStarted?: boolean;
   requestChannelId?: string;
   signupsChannelId?: string;
-  customerId: string;
-  handlerId?: string;
-  team?: {
-    name: string;
-    teamId: string;
-    leaderId: string;
-  };
-  boosters?: {
+  picked?: {
+    teamLeaderId: string;
     tankId: string;
     healerId: string;
     dpsOneId: string;
     dpsTwoId: string;
+    keyHolderId: string;
+    handlerId: string;
   };
-  teamQueue?: {
-    teamName: string;
-    teamId: string;
-    leaderId: string;
-  }[];
   queues?: {
+    teamLeaderQueue: string[];
     tankQueue: string[];
     healerQueue: string[];
     dpsQueue: string[];
+    keyHolderQueue: string[];
+    handlerQueue: string[];
   };
   keyInfo?: {
     keyLevel: string;
@@ -40,4 +39,13 @@ export interface IMythicPlusBoost {
     paymentRealms: string;
     notes: string;
   };
+}
+
+export interface IQueues {
+  teamLeaderQueue: string[];
+  tankQueue: string[];
+  healerQueue: string[];
+  dpsQueue: string[];
+  keyHolderQueue: string[];
+  handlerQueue: string[];
 }
