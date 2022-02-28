@@ -31,20 +31,18 @@ class Main {
     this.client.on('ready', async () => {
       this.client.user.setActivity({
         name: 'Starting...',
-        type: ActivityTypes.STREAMING,
       });
 
       await RequestEmbedBuilder.build(this.client);
 
       console.log('Ready!');
       this.client.user.setActivity({
-        name: 'Making your life easier...',
-        type: ActivityTypes.COMPETING,
+        name: 'your requests',
+        type: ActivityTypes.LISTENING,
       });
     });
 
     this.client.on('interactionCreate', async (interaction) => {
-      console.log('Interaction created!');
       const factory = new ButtonFactory();
       switch (true) {
         case interaction.isButton():
@@ -54,9 +52,11 @@ class Main {
     });
 
     this.client.on('messageCreate', async (message) => {
-      console.log('Message created!');
       if (message.partial) {
         message = await message.fetch();
+      }
+      if (message.type === 'CHANNEL_PINNED_MESSAGE') {
+        message.delete();
       }
     });
 

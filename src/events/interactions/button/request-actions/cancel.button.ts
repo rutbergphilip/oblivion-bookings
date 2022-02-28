@@ -1,10 +1,16 @@
-import { ObjectId } from 'mongodb';
+import { RequestActionPermissions } from './../../../../permissions/requestactions.permissions';
 import { ButtonInteraction, MessageOptions } from 'discord.js';
 import { RequestRepository } from '../../../../persistance/repositories/mplusrequests.repository';
 import { Emojis } from '../../../../constants/emojis.enum';
+import { ActionPermissions } from '../../../../permissions/actions.permission';
 
 export class CancelButton {
-  static async handle(interaction: ButtonInteraction) {
+  static async run(interaction: ButtonInteraction) {
+    if (!(await RequestActionPermissions.isEligable(interaction))) {
+      return interaction.reply({
+        content: `${Emojis.X} Insufficient permissions.`,
+      });
+    }
     try {
       const repository = new RequestRepository();
       const entity = await repository.get(interaction.customId.split('-')[1]);
@@ -22,13 +28,13 @@ This channel will soon be deleted...`,
           components: [],
         } as MessageOptions);
 
-      await repository.delete(entity.requestId);
-
-      setTimeout(() => {
-        interaction.channel.delete();
-      }, 5000);
+      await repository.delete(entity._id);
     } catch (error) {
       console.error(error);
+    } finally {
+      setTimeout(() => {
+        interaction.channel.delete().catch(console.error);
+      }, 5000);
     }
   }
 }

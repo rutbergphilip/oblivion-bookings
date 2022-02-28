@@ -12,13 +12,6 @@ export class RequestRepository {
       .findOne({ _id: new ObjectId(objectId) });
   }
 
-  async getByRequestId(requestId: string): Promise<MythicPlusRequestEntity> {
-    const database = await ConnectionService.get();
-    return await database
-      .collection<MythicPlusRequestEntity>(this.COLLECTION)
-      .findOne({ requestId: requestId });
-  }
-
   async insert(
     entity: MythicPlusRequestEntity
   ): Promise<MythicPlusRequestEntity> {
@@ -58,10 +51,10 @@ export class RequestRepository {
     };
   }
 
-  async delete(requestId: string) {
+  async delete(objectId: ObjectId | string) {
     const database = await ConnectionService.get();
     await database
       .collection<MythicPlusRequestEntity>(this.COLLECTION)
-      .deleteOne({ requestId: requestId });
+      .deleteOne({ _id: new ObjectId(objectId) });
   }
 }

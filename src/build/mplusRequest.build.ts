@@ -27,11 +27,12 @@ export class MythicPlusRequestBuilder {
       customerId: customer.id,
       isComplete: false,
       faction: faction,
+      isOpenForAll: false,
     });
 
     return {
       embeds: [this.getEmbed(customer)],
-      components: [ActionRowBuilder.buildRequestActionRow(entity)],
+      components: [ActionRowBuilder.buildRequestActionRow(entity._id)],
       entity: entity,
     };
   }

@@ -1,6 +1,6 @@
-import { Logos } from './../../../../constants/logos.enum';
-import { Global } from './../../../../constants/global.enum';
-import { Factions } from './../../../../constants/factions.enum';
+import { Logos } from '../../../../constants/logos.enum';
+import { Global } from '../../../../constants/global.enum';
+import { Factions } from '../../../../constants/factions.enum';
 import { MythicPlusRequestBuilder } from '../../../../build/mplusRequest.build';
 import {
   ButtonInteraction,
@@ -17,7 +17,7 @@ import { Roles } from '../../../../constants/roles.enum';
 import { RequestRepository } from '../../../../persistance/repositories/mplusrequests.repository';
 
 export class AllianceButton {
-  public static async handle(interaction: ButtonInteraction) {
+  static async run(interaction: ButtonInteraction) {
     try {
       await interaction.reply({
         content: `${Emojis.LOADING} creating ticket...`,
@@ -79,7 +79,7 @@ export class AllianceButton {
         allow: ['VIEW_CHANNEL'],
       },
       {
-        id: Global.SELFID,
+        id: <string>Global.SELFID,
         allow: ['VIEW_CHANNEL'],
       },
       {

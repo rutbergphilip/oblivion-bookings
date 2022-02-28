@@ -1,7 +1,7 @@
-import { MythicPlusRequestCollector } from './../../../../collectors/mplusrequest.collector';
-import { Logos } from './../../../../constants/logos.enum';
-import { Global } from './../../../../constants/global.enum';
-import { Factions } from './../../../../constants/factions.enum';
+import { MythicPlusRequestCollector } from '../../../../collectors/mplusrequest.collector';
+import { Logos } from '../../../../constants/logos.enum';
+import { Global } from '../../../../constants/global.enum';
+import { Factions } from '../../../../constants/factions.enum';
 import { MythicPlusRequestBuilder } from '../../../../build/mplusRequest.build';
 import {
   ButtonInteraction,
@@ -16,9 +16,10 @@ import { Emojis } from '../../../../constants/emojis.enum';
 import { Channels } from '../../../../constants/channels.enum';
 import { Roles } from '../../../../constants/roles.enum';
 import { RequestRepository } from '../../../../persistance/repositories/mplusrequests.repository';
+import { RequestUtils } from '../../../../utils/requests.utils';
 
 export class HordeButton {
-  public static async handle(interaction: ButtonInteraction) {
+  static async run(interaction: ButtonInteraction) {
     try {
       await interaction.reply({
         content: `${Emojis.LOADING} creating ticket...`,
@@ -31,7 +32,10 @@ export class HordeButton {
         {
           type: ChannelTypes.GUILD_TEXT,
           parent: Channels.CATEGORY_MPLUS_REQUESTS_HORDE,
-          permissionOverwrites: this.channelPermissions(interaction, customer),
+          permissionOverwrites: RequestUtils.channelPermissions(
+            interaction,
+            customer
+          ),
         }
       );
 
@@ -50,6 +54,7 @@ export class HordeButton {
         components: components,
       });
       ticketMessage.pin();
+      await (await ticketChannel.send({ content: '``` ```' })).pin();
 
       await interaction.editReply({
         content: `${Emojis.SUCCESS} Request ticket created! ${ticketChannel}`,
@@ -60,64 +65,4 @@ export class HordeButton {
       console.error(error);
     }
   }
-
-  private static channelPermissions = (
-    interaction: MessageComponentInteraction,
-    customer: GuildMember
-  ): OverwriteResolvable[] => {
-    return [
-      {
-        id: interaction.guildId,
-        deny: ['VIEW_CHANNEL'],
-      },
-      {
-        id: customer.id,
-        allow: ['VIEW_CHANNEL'],
-      },
-      {
-        id: Global.SELFID,
-        allow: ['VIEW_CHANNEL'],
-      },
-      {
-        id: Roles.ADMIN,
-        allow: [
-          'VIEW_CHANNEL',
-          'SEND_MESSAGES',
-          'MANAGE_MESSAGES',
-          'MANAGE_CHANNELS',
-          'READ_MESSAGE_HISTORY',
-        ],
-      },
-      {
-        id: Roles.STAFF,
-        allow: [
-          'VIEW_CHANNEL',
-          'SEND_MESSAGES',
-          'MANAGE_MESSAGES',
-          'MANAGE_CHANNELS',
-          'READ_MESSAGE_HISTORY',
-        ],
-      },
-      {
-        id: Roles.MODERATOR,
-        allow: [
-          'VIEW_CHANNEL',
-          'SEND_MESSAGES',
-          'MANAGE_MESSAGES',
-          'MANAGE_CHANNELS',
-          'READ_MESSAGE_HISTORY',
-        ],
-      },
-      {
-        id: Roles.MARKET_ASSISTANT,
-        allow: [
-          'VIEW_CHANNEL',
-          'SEND_MESSAGES',
-          'MANAGE_MESSAGES',
-          'MANAGE_CHANNELS',
-          'READ_MESSAGE_HISTORY',
-        ],
-      },
-    ];
-  };
 }

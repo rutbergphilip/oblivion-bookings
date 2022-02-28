@@ -1,30 +1,35 @@
+import { Factions } from './../../constants/factions.enum';
 import { BaseEntity } from './base.entity';
 import { RequestTypes } from '../../constants/request.enum';
 
 export interface MythicPlusRequestEntity extends BaseEntity {
   type: RequestTypes;
+  faction: Factions;
   isComplete: boolean;
-  requestId?: string;
+  isOpenForAll: boolean;
+  isTeamTaken?: boolean;
+  hasStarted?: boolean;
+  requestChannelId?: string;
+  requestMessageId?: string;
+  signupsChannelId?: string;
+  signupsMessageId?: string;
   customerId: string;
-  handlerId?: string;
-  team?: {
-    name: string;
-    leaderId: string;
-  };
-  boosters?: {
+  picked?: {
+    teamLeaderId: string;
     tankId: string;
     healerId: string;
     dpsOneId: string;
     dpsTwoId: string;
+    keyHolderId: string;
+    handlerId: string;
   };
-  faction: string;
-  boostInfo?: {
-    keys: {
-      dungeon: string;
-      level: string;
-      timed: boolean;
-    }[];
+  keyInfo?: {
+    keyLevel: string;
+    amountKeys: string;
     armorStack: string;
-    paymentRealm: string;
+    timed: string;
+    keys: string;
+    paymentRealms: string;
+    notes: string;
   };
 }

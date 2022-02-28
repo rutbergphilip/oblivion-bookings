@@ -7,4 +7,11 @@ export enum Action {
   COMPLETE = 'complete',
   CANCEL = 'cancel',
   REPOST = 'repost',
+  SIGNUP = 'signup',
+  TANK = 'tank',
+  HEALER = 'healer',
+  DPS = 'dps',
+  TEAM_TAKE = 'teamtake',
+  COLLECTOR = 'collector',
+  KEYHOLDER = 'keyholder',
 }
