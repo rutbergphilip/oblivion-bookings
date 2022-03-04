@@ -1,3 +1,4 @@
+import { Emojis } from './../constants/emojis.enum';
 import { Roles } from './../constants/roles.enum';
 import { Colors } from '../constants/colors.enum';
 import { Logos } from '../constants/logos.enum';
@@ -41,19 +42,22 @@ export class MythicPlusBuilder {
 
     await this.validateQuestions(collected);
 
-    entity.signupsChannelId = this.getChannel();
-    entity.faction = this.faction;
-    entity.keyInfo = {
-      keyLevel: this.keyLevel,
-      amountKeys: this.amountKeys,
-      armorStack: this.armorStack,
-      keys: this.keys,
-      timed: this.timed,
-      paymentRealms: this.paymentRealms,
-      notes: this.notes,
-    };
-
-    await requestRepository.update(entity);
+    await requestRepository.update({
+      ...entity,
+      ...{
+        signupsChannelId: this.getChannel(),
+        faction: this.faction,
+        keyInfo: {
+          keyLevel: this.keyLevel,
+          amountKeys: this.amountKeys,
+          armorStack: this.armorStack,
+          keys: this.keys,
+          timed: this.timed,
+          paymentRealms: this.paymentRealms,
+          notes: this.notes,
+        },
+      },
+    });
 
     return this;
   }
@@ -102,7 +106,7 @@ export class MythicPlusBuilder {
           this.answers.push({ name: 'Keys', value: this.keys, inline: true });
           break;
         case 4:
-          this.timed = answer == '1' ? 'Yes' : 'No';
+          this.timed = answer == '1' ? `${Emojis.CHECK} Yes` : `${Emojis.X} No`;
           this.answers.push({ name: 'Timed', value: this.timed, inline: true });
           break;
         case 5:
@@ -116,7 +120,7 @@ export class MythicPlusBuilder {
         case 6:
           this.notes = answer === 'no' ? undefined : answer;
           this.answers.push({
-            name: 'Key level',
+            name: 'Additional notes',
             value: this.notes,
             inline: true,
           });
@@ -136,10 +140,12 @@ export class MythicPlusBuilder {
       embeds: [
         new MessageEmbed()
           .setTitle('Mythic Plus Request')
+          .setDescription(`${Emojis.TEAMLEADER} Team Leader`)
           .addFields(this.answers.filter((answer) => answer.value))
           .setFooter({
             text: `🆔: ${this.requestId}`,
           })
+          .setColor(Colors.BOOST_CREATING)
           .setTimestamp(),
       ],
       components: [

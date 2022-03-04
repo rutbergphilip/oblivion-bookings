@@ -1,21 +1,10 @@
+import { Factions } from './../../../../constants/factions.enum';
 import { ActionPermissions } from './../../../../permissions/actions.permission';
-import { MythicPlusBoost } from './../../../../template/mplusboost.template';
 import { Roles } from './../../../../constants/roles.enum';
 import { MythicPlusCache } from './../../../../cache/mplus.cache';
-import { ObjectId } from 'mongodb';
-import { IRequestBuilder } from '../../../../interfaces/requestbuilder.interface';
-import {
-  ButtonInteraction,
-  GuildMember,
-  MessageEmbed,
-  MessageOptions,
-  TextChannel,
-} from 'discord.js';
+import { ButtonInteraction, TextChannel } from 'discord.js';
 import { RequestRepository } from '../../../../persistance/repositories/mplusrequests.repository';
-import { Channels } from '../../../../constants/channels.enum';
-import { ChannelTypes } from 'discord.js/typings/enums';
 import { Emojis } from '../../../../constants/emojis.enum';
-import { APIInteractionGuildMember, ComponentType } from 'discord-api-types';
 
 export class SignupButton {
   static async run(interaction: ButtonInteraction) {
@@ -49,7 +38,9 @@ export class SignupButton {
             !user.roles.cache.has(Roles.TANK) &&
             !ActionPermissions.isMarketAssistantOrAbove(user)
           ) {
-            interaction.editReply({ content: `Insufficient permissions.` });
+            interaction.editReply({
+              content: `You're missing the <@&${Roles.TANK}> role.`,
+            });
             return;
           }
           boost.tankClicked(interaction, user);
@@ -59,32 +50,42 @@ export class SignupButton {
             !user.roles.cache.has(Roles.HEALER) &&
             !ActionPermissions.isMarketAssistantOrAbove(user)
           ) {
-            interaction.editReply({ content: `Insufficient permissions.` });
+            interaction.editReply({
+              content: `You're missing the <@&${Roles.HEALER}> role.`,
+            });
             return;
           }
-          boost.handlerClicked(interaction, user);
+          boost.healerClicked(interaction, user);
           break;
         case buttonType === 'dps':
           if (
             !user.roles.cache.has(Roles.DPS) &&
             !ActionPermissions.isMarketAssistantOrAbove(user)
           ) {
-            interaction.editReply({ content: `Insufficient permissions.` });
+            interaction.editReply({
+              content: `You're missing the <@&${Roles.DPS}> role.`,
+            });
             return;
           }
           boost.dpsClicked(interaction, user);
           break;
         case buttonType === 'teamtake':
           if (
-            !user.roles.cache.hasAny(
-              Roles.H_ALL_STAR_LEADER,
-              Roles.H_VERIFIED_LEADER,
-              Roles.A_ALL_STAR_LEADER,
-              Roles.A_VERIFIED_LEADER
-            ) &&
+            ((boost.faction === Factions.HORDE &&
+              !user.roles.cache.hasAny(
+                Roles.H_ALL_STAR_LEADER,
+                Roles.H_VERIFIED_LEADER
+              )) ||
+              (boost.faction === Factions.ALLIANCE &&
+                !user.roles.cache.hasAny(
+                  Roles.A_ALL_STAR_LEADER,
+                  Roles.A_VERIFIED_LEADER
+                ))) &&
             !ActionPermissions.isMarketAssistantOrAbove(user)
           ) {
-            interaction.editReply({ content: `Insufficient permissions.` });
+            interaction.editReply({
+              content: `You're missing team leader roles`,
+            });
             return;
           }
           boost.teamClicked(interaction, user);
@@ -102,7 +103,7 @@ export class SignupButton {
       console.error(error);
     } finally {
       boost.throttle(boostMessage);
-      if (boost.isBoostReady()) {
+      if (boost.isReady()) {
         boostMessage.components.forEach((component) => {
           component.components.forEach((subComponent) => {
             subComponent.setDisabled(true);
@@ -114,18 +115,34 @@ export class SignupButton {
           components: boostMessage.components,
         });
 
-        entity.hasStarted = true;
-        entity.picked = {
-          teamLeaderId: boost.picked.teamLeaderId,
-          handlerId: boost.picked.handlerId,
-          keyHolderId: boost.picked.keyHolderId,
-          tankId: boost.picked.tankId,
-          healerId: boost.picked.healerId,
-          dpsOneId: boost.picked.dpsOneId,
-          dpsTwoId: boost.picked.dpsTwoId,
-        };
+        repository.update({
+          ...entity,
+          ...{
+            hasStarted: true,
+            picked: {
+              teamLeaderId: boost.picked.teamLeaderId,
+              handlerId: boost.picked.handlerId,
+              keyHolderId: boost.picked.keyHolderId,
+              tankId: boost.picked.tankId,
+              healerId: boost.picked.healerId,
+              dpsOneId: boost.picked.dpsOneId,
+              dpsTwoId: boost.picked.dpsTwoId,
+            },
+          },
+        });
 
-        repository.update(entity);
+        const requestChannel = <TextChannel>(
+          interaction.guild.channels.cache.get(boost.requestChannelId)
+        );
+        await requestChannel.permissionOverwrites.edit(
+          boost.picked.handlerId || boost.picked.teamLeaderId,
+          {
+            MANAGE_MESSAGES: false,
+            READ_MESSAGE_HISTORY: true,
+            SEND_MESSAGES: true,
+            VIEW_CHANNEL: true,
+          }
+        );
       }
     }
   }

@@ -48,7 +48,7 @@ This channel will soon be deleted...`,
 
       setTimeout(() => {
         interaction.channel.delete();
-      }, 5000);
+      }, 10000);
     } catch (error) {
       console.error(error);
     }

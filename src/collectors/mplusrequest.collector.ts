@@ -1,6 +1,6 @@
+import { Roles } from './../constants/roles.enum';
 import { MythicPlusBoost } from './../template/mplusboost.template';
 import { RequestRepository } from './../persistance/repositories/mplusrequests.repository';
-import { Channels } from './../constants/channels.enum';
 import { MythicPlusBuilder } from '../build/mplusSignups.build';
 import { Emojis } from './../constants/emojis.enum';
 import {
@@ -10,12 +10,14 @@ import {
   Message,
   MessageActionRow,
   MessageCollector,
+  MessageEmbed,
   MessageSelectMenu,
   SelectMenuInteraction,
   TextChannel,
 } from 'discord.js';
 import { MythicPlusCache } from '../cache/mplus.cache';
 import { ActionRowBuilder } from '../build/rows.build';
+import { Factions } from '../constants/factions.enum';
 export class MythicPlusRequestCollector {
   private readonly filter = (message: Message): boolean => {
     const isAuthor = message.author.id === this.interaction.user.id;
@@ -158,9 +160,9 @@ export class MythicPlusRequestCollector {
       } else if (collected.size !== this.questions.length) {
         await processingMessage.edit({
           content: `Process stopped with only ${collected.size} questions out of ${this.questions.length} answered.
-  If you think this was a mistake, please open up a new ticket.
+If you think this was a mistake, please open up a new ticket.
           
-  Closing this ticket...`,
+Closing this ticket...`,
         });
 
         setTimeout(() => {
@@ -193,6 +195,7 @@ export class MythicPlusRequestCollector {
           entity.customerId,
           entity._id
         );
+        boost.signupsMessageId = boostMessage.id;
         MythicPlusCache.set(this.requestId, boost);
 
         processingMessage.edit({
@@ -201,14 +204,31 @@ export class MythicPlusRequestCollector {
 
         setTimeout(async () => {
           const entity = await repository.get(requestId);
+          const boost = MythicPlusCache.get(requestId);
           if (!entity.hasStarted && !entity.isTeamTaken) {
-            entity.isOpenForAll = true;
-            repository.update(entity);
+            boost.isOpenForAll = true;
+            repository.update({ ...entity, ...{ isOpenForAll: true } });
+
             boostMessage.edit({
-              content: boostMessage.content,
+              content: 'Booking now open for all!',
               embeds: boostMessage.embeds,
               components:
                 ActionRowBuilder.buildMythicPlusMembersSignupsRow(requestId),
+            });
+
+            boostMessage.channel.send({
+              content: `<@${
+                entity.faction === Factions.HORDE
+                  ? Roles.H_MPLUS_MEMBER
+                  : Roles.A_MPLUS_MEMBER
+              }>`,
+              embeds: [
+                new MessageEmbed()
+                  .setDescription(
+                    `[Booking now open for all!](${boostMessage.url})`
+                  )
+                  .setColor(boost.currentColor),
+              ],
             });
           }
         }, 10000);

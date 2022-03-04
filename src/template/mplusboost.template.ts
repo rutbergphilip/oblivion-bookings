@@ -1,3 +1,5 @@
+import { Colors } from './../constants/colors.enum';
+import { Emojis } from './../constants/emojis.enum';
 import { ObjectId } from 'mongodb';
 import {
   Message,
@@ -19,7 +21,7 @@ export class MythicPlusBoost {
   readonly customerId: string;
   readonly boostId: string | ObjectId;
   private timeout: NodeJS.Timeout;
-  picked? = {
+  picked = {
     teamLeaderId: '',
     tankId: '',
     healerId: '',
@@ -28,7 +30,7 @@ export class MythicPlusBoost {
     keyHolderId: '',
     handlerId: '',
   };
-  keyInfo? = {
+  keyInfo = {
     keyLevel: '',
     amountKeys: '',
     armorStack: '',
@@ -37,7 +39,7 @@ export class MythicPlusBoost {
     paymentRealms: '',
     notes: '',
   };
-  queues?: IQueues = {
+  queues: IQueues = {
     teamLeaderQueue: [],
     tankQueue: [],
     healerQueue: [],
@@ -45,12 +47,20 @@ export class MythicPlusBoost {
     keyHolderQueue: [],
     handlerQueue: [],
   };
-  requestChannelId? = '';
-  signupsChannelId? = '';
+  requestChannelId = '';
+  requestMessageId = '';
+  signupsChannelId = '';
+  signupsMessageId = '';
+  openForAllMessageId? = '';
   isComplete = false;
   isOpenForAll = false;
-  isTeamTaken? = false;
-  hasStarted? = false;
+  isTeamTaken = false;
+  hasStarted = false;
+  currentColor:
+    | Colors.BOOST_CREATING
+    | Colors.BOOST_IN_PROGRESS
+    | Colors.BOOST_COMPLETE
+    | Colors.BOOST_CANCELLED = Colors.BOOST_CREATING;
 
   constructor(
     type: RequestTypes,
@@ -73,28 +83,46 @@ export class MythicPlusBoost {
 
   private buildEmbed(message: Message): MessageOptions {
     const embed = message.embeds[0];
-    const component = message.components[0];
+    const components = message.components;
     const content = message.content;
 
-    const boosterTemplate = `
-Tank: <@${this.picked.tankId}>
-Healer: <@${this.picked.healerId}>
-Dps1: <@${this.picked.dpsOneId}>
-Dps2: <@${this.picked.dpsTwoId}>
+    const template = !this.isTeamTaken
+      ? `
+${Emojis.TANK} ${this.picked.tankId ? '<@' + this.picked.tankId + '>' : ''}
+${Emojis.HEALER} ${
+          this.picked.healerId ? '<@' + this.picked.healerId + '>' : ''
+        }
+${Emojis.DPS} ${this.picked.dpsOneId ? '<@' + this.picked.dpsOneId + '>' : ''}
+${Emojis.DPS} ${this.picked.dpsTwoId ? '<@' + this.picked.dpsTwoId + '>' : ''}
 
-Handler: <@${this.picked.handlerId}>`;
+${Emojis.KEYSTONE} ${
+          this.picked.keyHolderId ? '<@' + this.picked.keyHolderId + '>' : ''
+        }
 
-    const teamTemplate = `
-Team Leader: <@${this.picked.teamLeaderId}>`;
+${Emojis.COLLECTOR} ${
+          this.picked.handlerId ? '<@' + this.picked.handlerId + '>' : ''
+        }`
+      : `
+${Emojis.TEAMLEADER} Team Leader ${
+          this.picked.teamLeaderId ? '<@' + this.picked.teamLeaderId + '>' : ''
+        }`;
 
     return {
       content: content,
       embeds: [
         new MessageEmbed(embed).setDescription(
-          this.isTeamTaken ? teamTemplate : boosterTemplate
+          [
+            this.picked.tankId,
+            this.picked.healerId,
+            this.picked.dpsOneId,
+            this.picked.dpsTwoId,
+            this.picked.keyHolderId,
+          ].some((signup) => !signup) && !this.isTeamTaken
+            ? template
+            : ''
         ),
       ],
-      components: [component],
+      components: components,
     };
   }
 
@@ -131,22 +159,31 @@ Team Leader: <@${this.picked.teamLeaderId}>`;
   tankClicked(interaction: ButtonInteraction, user: GuildMember) {
     if (!this.queues.tankQueue.includes(user.id)) {
       this.queues.tankQueue.push(user.id);
-      interaction.reply({
+      interaction.editReply({
         content: "You've been added to the tank queue",
-        ephemeral: true,
       });
-      if (!this.picked.tankId && !this.isTeamTaken && this.picked.keyHolderId) {
+      if (
+        this.picked.keyHolderId &&
+        !this.picked.tankId &&
+        this.isUniqueSignup(user)
+      ) {
         this.picked.tankId = user.id;
+      } else if (
+        this.queues.keyHolderQueue.includes(user.id) &&
+        !this.picked.tankId &&
+        this.isUniqueSignup(user)
+      ) {
+        this.picked.tankId = user.id;
+        this.picked.keyHolderId = user.id;
+        this.fillSlots();
       }
     } else {
       this.queues.tankQueue.splice(this.queues.tankQueue.indexOf(user.id), 1);
-      interaction.reply({
+      interaction.editReply({
         content: "You've been removed from the tank queue",
-        ephemeral: true,
       });
-      if (this.picked.tankId === user.id) {
-        this.picked.tankId =
-          this.queues.tankQueue.length > 0 ? this.queues.tankQueue[0] : '';
+      if (this.pickAnotherKeyholder()) {
+        this.fillSlots();
       }
     }
   }
@@ -154,29 +191,39 @@ Team Leader: <@${this.picked.teamLeaderId}>`;
   healerClicked(interaction: ButtonInteraction, user: GuildMember) {
     if (!this.queues.healerQueue.includes(user.id)) {
       this.queues.healerQueue.push(user.id);
-      interaction.reply({
+      interaction.editReply({
         content: "You've been added to the healer queue",
-        ephemeral: true,
       });
+
+      if (this.isTeamTaken) {
+        return;
+      }
+
       if (
+        this.picked.keyHolderId &&
         !this.picked.healerId &&
-        !this.isTeamTaken &&
-        this.picked.keyHolderId
+        this.isUniqueSignup(user)
       ) {
         this.picked.healerId = user.id;
+      } else if (
+        this.queues.keyHolderQueue.includes(user.id) &&
+        !this.picked.healerId &&
+        this.isUniqueSignup(user)
+      ) {
+        this.picked.healerId = user.id;
+        this.picked.keyHolderId = user.id;
+        this.fillSlots();
       }
     } else {
       this.queues.healerQueue.splice(
         this.queues.healerQueue.indexOf(user.id),
         1
       );
-      interaction.reply({
+      interaction.editReply({
         content: "You've been removed from the healer queue",
-        ephemeral: true,
       });
-      if (this.picked.healerId === user.id) {
-        this.picked.healerId =
-          this.queues.healerQueue.length > 0 ? this.queues.healerQueue[0] : '';
+      if (this.pickAnotherKeyholder()) {
+        this.fillSlots();
       }
     }
   }
@@ -184,35 +231,40 @@ Team Leader: <@${this.picked.teamLeaderId}>`;
   dpsClicked(interaction: ButtonInteraction, user: GuildMember) {
     if (!this.queues.dpsQueue.includes(user.id)) {
       this.queues.teamLeaderQueue.push(user.id);
-      interaction.reply({
+      interaction.editReply({
         content: "You've been added to the dps queue",
-        ephemeral: true,
       });
+
+      if (this.isTeamTaken) {
+        return;
+      }
+
       if (
+        !this.picked.keyHolderId &&
         [this.picked.dpsOneId, this.picked.dpsTwoId].includes('') &&
-        !this.isTeamTaken &&
-        this.picked.keyHolderId
+        this.isUniqueSignup(user)
       ) {
-        if (this.picked.dpsOneId === '') {
-          this.picked.dpsOneId = user.id;
-        } else {
-          this.picked.dpsTwoId = user.id;
-        }
+        this.picked.dpsOneId === ''
+          ? (this.picked.dpsOneId = user.id)
+          : (this.picked.dpsTwoId = user.id);
+      } else if (
+        this.queues.keyHolderQueue.includes(user.id) &&
+        [this.picked.dpsOneId, this.picked.dpsTwoId].includes('') &&
+        this.isUniqueSignup(user)
+      ) {
+        this.picked.dpsOneId === ''
+          ? (this.picked.dpsOneId = user.id)
+          : (this.picked.dpsTwoId = user.id);
+        this.picked.keyHolderId = user.id;
+        this.fillSlots();
       }
     } else {
       this.queues.dpsQueue.splice(this.queues.dpsQueue.indexOf(user.id), 1);
-      interaction.reply({
+      interaction.editReply({
         content: "You've been removed from the dps queue",
-        ephemeral: true,
       });
-      if ([this.picked.dpsOneId, this.picked.dpsTwoId].includes(user.id)) {
-        if (this.picked.dpsOneId === user.id) {
-          this.picked.dpsOneId =
-            this.queues.dpsQueue.length > 0 ? this.queues.dpsQueue[0] : '';
-        } else {
-          this.picked.dpsTwoId =
-            this.queues.dpsQueue.length > 0 ? this.queues.dpsQueue[0] : '';
-        }
+      if (this.pickAnotherKeyholder()) {
+        this.fillSlots();
       }
     }
   }
@@ -220,12 +272,15 @@ Team Leader: <@${this.picked.teamLeaderId}>`;
   keyholderClicked(interaction: ButtonInteraction, user: GuildMember) {
     if (!this.queues.keyHolderQueue.includes(user.id)) {
       this.queues.keyHolderQueue.push(user.id);
-      interaction.reply({
+      interaction.editReply({
         content: "You've been added to the keyholder queue",
-        ephemeral: true,
       });
-      if (!this.picked.keyHolderId) {
-        this.picked.keyHolderId = user.id;
+
+      if (this.picked.keyHolderId && !this.isUniqueSignup(user)) {
+        return;
+      }
+
+      if (this.pickAnotherKeyholder()) {
         this.fillSlots();
       }
     } else {
@@ -233,15 +288,13 @@ Team Leader: <@${this.picked.teamLeaderId}>`;
         this.queues.keyHolderQueue.indexOf(user.id),
         1
       );
-      interaction.reply({
+      interaction.editReply({
         content: "You've been removed from the keyholder queue",
-        ephemeral: true,
       });
       if (this.picked.keyHolderId === user.id) {
-        this.picked.keyHolderId =
-          this.queues.keyHolderQueue.length > 0
-            ? this.queues.keyHolderQueue[0]
-            : '';
+        if (this.pickAnotherKeyholder()) {
+          this.fillSlots();
+        }
       }
     }
   }
@@ -249,9 +302,8 @@ Team Leader: <@${this.picked.teamLeaderId}>`;
   handlerClicked(interaction: ButtonInteraction, user: GuildMember) {
     if (!this.queues.handlerQueue.includes(user.id)) {
       this.queues.handlerQueue.push(user.id);
-      interaction.reply({
+      interaction.editReply({
         content: "You've been added to the handler queue",
-        ephemeral: true,
       });
       if (!this.picked.handlerId) {
         this.picked.handlerId = user.id;
@@ -261,9 +313,8 @@ Team Leader: <@${this.picked.teamLeaderId}>`;
         this.queues.handlerQueue.indexOf(user.id),
         1
       );
-      interaction.reply({
+      interaction.editReply({
         content: "You've been removed from the handler queue",
-        ephemeral: true,
       });
       if (this.picked.handlerId === user.id) {
         this.picked.handlerId =
@@ -272,6 +323,13 @@ Team Leader: <@${this.picked.teamLeaderId}>`;
             : '';
       }
     }
+  }
+
+  private clearSlots() {
+    this.picked.tankId = '';
+    this.picked.healerId = '';
+    this.picked.dpsOneId = '';
+    this.picked.dpsTwoId = '';
   }
 
   private fillSlots() {
@@ -332,19 +390,67 @@ Team Leader: <@${this.picked.teamLeaderId}>`;
     }
   }
 
-  isBoostReady(): boolean {
+  isUniqueSignup(user: GuildMember) {
+    return [
+      this.picked.tankId,
+      this.picked.healerId,
+      this.picked.dpsOneId,
+      this.picked.dpsTwoId,
+    ].every((sign) => sign !== user.id);
+  }
+
+  isReady(): boolean {
     return (
-      ([
+      [
         this.picked.tankId,
         this.picked.healerId,
         this.picked.dpsOneId,
         this.picked.dpsTwoId,
         this.picked.handlerId,
-      ].every((id) => id) &&
-        this.picked.keyHolderId !== '') ||
-      this.isTeamTaken
+        this.picked.keyHolderId,
+      ].every((id) => id) || this.isTeamTaken
     );
   }
 
-  startBoost() {}
+  private pickAnotherKeyholder() {
+    for (const userId of this.queues.keyHolderQueue) {
+      const noneIsUser = [
+        this.picked.tankId,
+        this.picked.healerId,
+        this.picked.dpsOneId,
+        this.picked.dpsTwoId,
+      ].every((id) => id !== userId);
+
+      if (this.queues.tankQueue.includes(userId)) {
+        if (noneIsUser) {
+          this.picked.tankId = userId;
+          this.picked.keyHolderId = userId;
+          return true;
+        } else if (this.picked.tankId === userId) {
+          this.picked.keyHolderId = userId;
+          return true;
+        }
+      } else if (this.queues.healerQueue.includes(userId)) {
+        if (noneIsUser) {
+          this.picked.healerId = userId;
+          this.picked.keyHolderId = userId;
+          return true;
+        } else if (this.picked.healerId === userId) {
+          this.picked.keyHolderId = userId;
+          return true;
+        }
+      } else if (this.queues.dpsQueue.includes(userId)) {
+        if ([this.picked.dpsOneId, this.picked.dpsTwoId].includes(userId)) {
+          this.picked.keyHolderId = userId;
+          return true;
+        }
+
+        this.picked.keyHolderId = userId;
+        this.picked.dpsTwoId = userId;
+        return true;
+      }
+    }
+    this.clearSlots();
+    return false;
+  }
 }

@@ -1,19 +1,28 @@
+import { MythicPlusRequestEntity } from './../../../../persistance/entities/mplusrequest.entity';
 import { RequestActionPermissions } from './../../../../permissions/requestactions.permissions';
-import { ButtonInteraction, MessageOptions } from 'discord.js';
+import {
+  ButtonInteraction,
+  Message,
+  MessageOptions,
+  TextChannel,
+} from 'discord.js';
 import { RequestRepository } from '../../../../persistance/repositories/mplusrequests.repository';
 import { Emojis } from '../../../../constants/emojis.enum';
-import { ActionPermissions } from '../../../../permissions/actions.permission';
+import { MythicPlusCache } from '../../../../cache/mplus.cache';
 
 export class CancelButton {
+  private static entity: MythicPlusRequestEntity;
+
   static async run(interaction: ButtonInteraction) {
     if (!(await RequestActionPermissions.isEligable(interaction))) {
       return interaction.reply({
         content: `${Emojis.X} Insufficient permissions.`,
       });
     }
+
     try {
       const repository = new RequestRepository();
-      const entity = await repository.get(interaction.customId.split('-')[1]);
+      this.entity = await repository.get(interaction.customId.split('-')[1]);
 
       await interaction.reply({
         content: `Request canceled.
@@ -28,13 +37,26 @@ This channel will soon be deleted...`,
           components: [],
         } as MessageOptions);
 
-      await repository.delete(entity._id);
+      await repository.delete(this.entity._id);
     } catch (error) {
       console.error(error);
     } finally {
-      setTimeout(() => {
+      setTimeout(async () => {
         interaction.channel.delete().catch(console.error);
-      }, 5000);
+
+        const signupsChannel = <TextChannel>(
+          interaction.guild.channels.cache.get(this.entity.signupsChannelId)
+        );
+        const signupsMessage =
+          <Message>(
+            signupsChannel.messages.cache.get(this.entity.signupsMessageId)
+          ) ||
+          (await signupsChannel.messages.fetch()).find(
+            (message) => message.id === this.entity.signupsMessageId
+          );
+
+        signupsMessage.delete().catch(console.error);
+      }, 10000);
     }
   }
 }
