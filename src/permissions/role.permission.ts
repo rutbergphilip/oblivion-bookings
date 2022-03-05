@@ -1,7 +1,7 @@
-import { Roles } from './../constants/roles.enum';
+import { Roles } from '../constants/roles.enum';
 import { GuildMember } from 'discord.js';
 
-export class ActionPermissions {
+export class RolePermissions {
   static isAdmin(member: GuildMember): boolean {
     return member.roles.cache.has(Roles.ADMIN);
   }

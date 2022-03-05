@@ -106,7 +106,7 @@ export class MythicPlusRequestCollector {
   }
 
   private async onCollect(message: Message): Promise<void | Message<boolean>> {
-    this.clearChat();
+    await this.clearChat();
 
     const processingMessage = await this.channel.send({
       content: `${Emojis.LOADING} Processing...`,
@@ -124,7 +124,7 @@ export class MythicPlusRequestCollector {
     this.bookingMessage.edit({
       embeds: [
         this.bookingMessage.embeds[0].addField(
-          this.askedQuestions[this.questionIndex].content,
+          this.askedQuestions[this.questionIndex]?.content,
           message.content
         ),
       ],
@@ -182,12 +182,17 @@ Closing this ticket...`,
         const entity = await repository.get(requestId);
 
         const boostMessage = await (<TextChannel>(
-          this.channel.guild.channels.cache.get(entity.signupsChannelId)
+          (this.channel.guild.channels.cache.get(entity.signupsChannelId) ||
+            (await this.channel.guild.channels.fetch(entity.signupsChannelId)))
         )).send(messageOptions);
 
-        entity.signupsMessageId = boostMessage.id;
-
-        await repository.update(entity);
+        await repository.update({
+          ...entity,
+          ...{
+            signupsMessageId: boostMessage.id,
+            bookingSentAt: new Date().getTime(),
+          },
+        });
 
         const boost = new MythicPlusBoost(
           entity.type,
@@ -206,9 +211,6 @@ Closing this ticket...`,
           const entity = await repository.get(requestId);
           const boost = MythicPlusCache.get(requestId);
           if (!entity.hasStarted && !entity.isTeamTaken) {
-            boost.isOpenForAll = true;
-            repository.update({ ...entity, ...{ isOpenForAll: true } });
-
             boostMessage.edit({
               content: 'Booking now open for all!',
               embeds: boostMessage.embeds,
@@ -216,8 +218,8 @@ Closing this ticket...`,
                 ActionRowBuilder.buildMythicPlusMembersSignupsRow(requestId),
             });
 
-            boostMessage.channel.send({
-              content: `<@${
+            const openForAllMessage = await boostMessage.channel.send({
+              content: `<@&${
                 entity.faction === Factions.HORDE
                   ? Roles.H_MPLUS_MEMBER
                   : Roles.A_MPLUS_MEMBER
@@ -229,6 +231,16 @@ Closing this ticket...`,
                   )
                   .setColor(boost.currentColor),
               ],
+            });
+
+            boost.isOpenForAll = true;
+            boost.openForAllMessageId = openForAllMessage.id;
+            repository.update({
+              ...entity,
+              ...{
+                isOpenForAll: true,
+                openForAllMessageId: openForAllMessage.id,
+              },
             });
           }
         }, 10000);

@@ -29,13 +29,15 @@ export class ButtonFactory {
         case buttonType === Action.ALLIANCE_MPLUS:
           await AllianceButton.run(interaction);
           break;
-        case buttonType === Action.SIGNUP:
-        case buttonType === Action.TANK:
-        case buttonType === Action.HEALER:
-        case buttonType === Action.DPS:
-        case buttonType === Action.COLLECTOR:
-        case buttonType === Action.KEYHOLDER:
-        case buttonType === Action.TEAM_TAKE:
+        case [
+          Action.SIGNUP,
+          Action.TANK,
+          Action.HEALER,
+          Action.DPS,
+          Action.COLLECTOR,
+          Action.KEYHOLDER,
+          Action.TEAM_TAKE,
+        ].some((action) => action === buttonType):
           await SignupButton.run(interaction);
           break;
         default:

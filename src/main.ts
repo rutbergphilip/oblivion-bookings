@@ -1,5 +1,5 @@
 import { ButtonFactory } from './events/interactions/button/button.factory';
-import { RequestEmbedBuilder } from './build/requestEmbed.build';
+import { RequestPanelBuilder } from './build/requestPanel.build';
 import { Client, Intents, ButtonInteraction } from 'discord.js';
 import { REST } from '@discordjs/rest';
 import { Routes } from 'discord-api-types/v9';
@@ -33,7 +33,7 @@ class Main {
         name: 'Starting...',
       });
 
-      await RequestEmbedBuilder.build(this.client);
+      await RequestPanelBuilder.build(this.client);
 
       console.log('Ready!');
       this.client.user.setActivity({

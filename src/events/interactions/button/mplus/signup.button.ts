@@ -1,5 +1,6 @@
+import { Colors } from './../../../../constants/colors.enum';
 import { Factions } from './../../../../constants/factions.enum';
-import { ActionPermissions } from './../../../../permissions/actions.permission';
+import { RolePermissions } from '../../../../permissions/role.permission';
 import { Roles } from './../../../../constants/roles.enum';
 import { MythicPlusCache } from './../../../../cache/mplus.cache';
 import { ButtonInteraction, TextChannel } from 'discord.js';
@@ -28,7 +29,7 @@ export class SignupButton {
     const repository = new RequestRepository();
     const entity = await repository.get(boost.boostId);
 
-    const boostMessage = interaction.channel.messages.cache.get(
+    const signupsMessage = interaction.channel.messages.cache.get(
       entity.signupsMessageId
     );
     try {
@@ -36,7 +37,7 @@ export class SignupButton {
         case buttonType === 'tank':
           if (
             !user.roles.cache.has(Roles.TANK) &&
-            !ActionPermissions.isMarketAssistantOrAbove(user)
+            !RolePermissions.isMarketAssistantOrAbove(user)
           ) {
             interaction.editReply({
               content: `You're missing the <@&${Roles.TANK}> role.`,
@@ -48,7 +49,7 @@ export class SignupButton {
         case buttonType === 'healer':
           if (
             !user.roles.cache.has(Roles.HEALER) &&
-            !ActionPermissions.isMarketAssistantOrAbove(user)
+            !RolePermissions.isMarketAssistantOrAbove(user)
           ) {
             interaction.editReply({
               content: `You're missing the <@&${Roles.HEALER}> role.`,
@@ -60,7 +61,7 @@ export class SignupButton {
         case buttonType === 'dps':
           if (
             !user.roles.cache.has(Roles.DPS) &&
-            !ActionPermissions.isMarketAssistantOrAbove(user)
+            !RolePermissions.isMarketAssistantOrAbove(user)
           ) {
             interaction.editReply({
               content: `You're missing the <@&${Roles.DPS}> role.`,
@@ -81,7 +82,7 @@ export class SignupButton {
                   Roles.A_ALL_STAR_LEADER,
                   Roles.A_VERIFIED_LEADER
                 ))) &&
-            !ActionPermissions.isMarketAssistantOrAbove(user)
+            !RolePermissions.isMarketAssistantOrAbove(user)
           ) {
             interaction.editReply({
               content: `You're missing team leader roles`,
@@ -102,17 +103,13 @@ export class SignupButton {
     } catch (error) {
       console.error(error);
     } finally {
-      boost.throttle(boostMessage);
+      await boost.throttle(signupsMessage);
       if (boost.isReady()) {
-        boostMessage.components.forEach((component) => {
-          component.components.forEach((subComponent) => {
-            subComponent.setDisabled(true);
-          });
-        });
-        boostMessage.edit({
-          content: boostMessage.content,
-          embeds: boostMessage.embeds,
-          components: boostMessage.components,
+        signupsMessage.embeds[0].setColor(Colors.BOOST_IN_PROGRESS);
+        signupsMessage.edit({
+          content: `Booking is now ready!`,
+          embeds: signupsMessage.embeds,
+          components: [],
         });
 
         repository.update({
@@ -132,16 +129,42 @@ export class SignupButton {
         });
 
         const requestChannel = <TextChannel>(
-          interaction.guild.channels.cache.get(boost.requestChannelId)
+          (interaction.guild.channels.cache.get(entity.requestChannelId) ||
+            (await interaction.guild.channels.fetch(entity.requestChannelId)))
         );
-        await requestChannel.permissionOverwrites.edit(
-          boost.picked.handlerId || boost.picked.teamLeaderId,
+        const signupsChannel = <TextChannel>(
+          (interaction.guild.channels.cache.get(entity.signupsChannelId) ||
+            (await interaction.guild.channels.fetch(entity.signupsChannelId)))
+        );
+
+        const openForAllMessage =
+          signupsChannel.messages.cache.get(entity.openForAllMessageId) ||
+          (await signupsChannel.messages.fetch(entity.openForAllMessageId));
+
+        if (openForAllMessage) {
+          openForAllMessage.delete();
+        }
+
+        await requestChannel.edit(
           {
-            MANAGE_MESSAGES: false,
-            READ_MESSAGE_HISTORY: true,
-            SEND_MESSAGES: true,
-            VIEW_CHANNEL: true,
+            permissionOverwrites: [
+              {
+                id: boost.picked.handlerId || boost.picked.teamLeaderId,
+                allow: [
+                  'VIEW_CHANNEL',
+                  'SEND_MESSAGES',
+                  'READ_MESSAGE_HISTORY',
+                ],
+              },
+            ],
           }
+          // boost.picked.handlerId || boost.picked.teamLeaderId,
+          // {
+          //   MANAGE_MESSAGES: false,
+          //   READ_MESSAGE_HISTORY: true,
+          //   SEND_MESSAGES: true,
+          //   VIEW_CHANNEL: true,
+          // }
         );
       }
     }

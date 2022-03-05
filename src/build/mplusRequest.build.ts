@@ -2,16 +2,8 @@ import { Colors } from '../constants/colors.enum';
 import { Logos } from '../constants/logos.enum';
 import { Factions } from '../constants/factions.enum';
 import { RequestTypes } from '../constants/request.enum';
-import { Global } from '../constants/global.enum';
 import { RequestRepository } from '../persistance/repositories/mplusrequests.repository';
-import {
-  Client,
-  GuildMember,
-  Message,
-  MessageEmbed,
-  MessageOptions,
-  TextChannel,
-} from 'discord.js';
+import { GuildMember, MessageEmbed } from 'discord.js';
 import { ActionRowBuilder } from './rows.build';
 import { Channels } from '../constants/channels.enum';
 import { IRequestBuilder } from '../interfaces/requestbuilder.interface';
@@ -19,7 +11,8 @@ import { IRequestBuilder } from '../interfaces/requestbuilder.interface';
 export class MythicPlusRequestBuilder {
   static async build(
     customer: GuildMember,
-    faction: Factions
+    faction: Factions,
+    requestChannelId: string
   ): Promise<IRequestBuilder> {
     const repository = new RequestRepository();
     const entity = await repository.insert({
@@ -28,6 +21,7 @@ export class MythicPlusRequestBuilder {
       isComplete: false,
       faction: faction,
       isOpenForAll: false,
+      requestChannelId: requestChannelId,
     });
 
     return {

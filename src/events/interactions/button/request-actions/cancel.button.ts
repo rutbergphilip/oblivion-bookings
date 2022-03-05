@@ -45,17 +45,33 @@ This channel will soon be deleted...`,
         interaction.channel.delete().catch(console.error);
 
         const signupsChannel = <TextChannel>(
-          interaction.guild.channels.cache.get(this.entity.signupsChannelId)
+          (interaction.guild.channels.cache.get(this.entity.signupsChannelId) ||
+            (await interaction.guild.channels.fetch(
+              this.entity.signupsChannelId
+            )))
         );
-        const signupsMessage =
-          <Message>(
-            signupsChannel.messages.cache.get(this.entity.signupsMessageId)
-          ) ||
-          (await signupsChannel.messages.fetch()).find(
-            (message) => message.id === this.entity.signupsMessageId
-          );
 
-        signupsMessage.delete().catch(console.error);
+        if (!signupsChannel) {
+          return;
+        }
+
+        const signupsMessage =
+          signupsChannel.messages?.cache?.get(this.entity.signupsMessageId) ||
+          (await signupsChannel.messages?.fetch(this.entity.signupsMessageId));
+        const openForAllMessage =
+          signupsChannel.messages?.cache?.get(
+            this.entity.openForAllMessageId
+          ) ||
+          (await signupsChannel.messages?.fetch(
+            this.entity.openForAllMessageId
+          ));
+
+        if (signupsMessage) {
+          signupsMessage.delete().catch(console.error);
+        }
+        if (openForAllMessage) {
+          openForAllMessage.delete().catch(console.error);
+        }
       }, 10000);
     }
   }

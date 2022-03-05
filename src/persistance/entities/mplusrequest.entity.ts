@@ -9,10 +9,12 @@ export interface MythicPlusRequestEntity extends BaseEntity {
   isOpenForAll: boolean;
   isTeamTaken?: boolean;
   hasStarted?: boolean;
+  bookingSentAt?: number;
   requestChannelId?: string;
   requestMessageId?: string;
   signupsChannelId?: string;
   signupsMessageId?: string;
+  openForAllMessageId?: string;
   customerId: string;
   picked?: {
     teamLeaderId: string;

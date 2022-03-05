@@ -1,12 +1,17 @@
 import { RequestEmbedEntity } from '../entities/requestembed.entity';
 import { ConnectionService } from '../connection.service';
-import { ObjectId } from 'mongodb';
-import { Snowflake } from 'discord-api-types';
 
-export class GlobalRepository {
+export class GlobalRepository<T> {
   private readonly COLLECTION = 'global';
 
-  async get(): Promise<RequestEmbedEntity> {
+  // async get<T>(query: string): Promise<T> {
+  //   const database = await ConnectionService.get();
+  //   return await database
+  //     .collection(this.COLLECTION)
+  //     .findOne({ name: query });
+  // }
+
+  async getRequestPanel(): Promise<RequestEmbedEntity> {
     const database = await ConnectionService.get();
     return await database
       .collection<RequestEmbedEntity>(this.COLLECTION)

@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "lib": ["es5", "es6"],
-    "allowJs": true,
+    "allowJs": false,
     "module": "commonjs",
     "esModuleInterop": true,
     "target": "es6",

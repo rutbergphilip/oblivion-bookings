@@ -1,27 +1,25 @@
-import { Factions } from './../constants/factions.enum';
-import { MythicPlusRequestBuilder } from './../build/mplusRequest.build';
 import {
-  ButtonInteraction,
-  Collection,
   GuildMember,
-  Message,
   MessageComponentInteraction,
-  MessageEmbed,
-  MessageOptions,
   OverwriteResolvable,
-  TextChannel,
+  PermissionString,
 } from 'discord.js';
-import { ChannelTypes } from 'discord.js/typings/enums';
 import { Global } from '../constants/global.enum';
 import { Roles } from '../constants/roles.enum';
-import { Channels } from '../constants/channels.enum';
-import { RequestRepository } from '../persistance/repositories/mplusrequests.repository';
 
 export class RequestUtils {
   static channelPermissions = (
     interaction: MessageComponentInteraction,
     customer: GuildMember
   ): OverwriteResolvable[] => {
+    const adminPermissions: PermissionString[] = [
+      'VIEW_CHANNEL',
+      'SEND_MESSAGES',
+      'MANAGE_MESSAGES',
+      'MANAGE_CHANNELS',
+      'READ_MESSAGE_HISTORY',
+    ];
+
     return [
       {
         id: interaction.guildId,
@@ -32,48 +30,24 @@ export class RequestUtils {
         allow: ['VIEW_CHANNEL'],
       },
       {
-        id: <string>Global.SELFID,
-        allow: ['VIEW_CHANNEL'],
+        id: <string>Global.BOTID,
+        allow: adminPermissions,
       },
       {
         id: Roles.ADMIN,
-        allow: [
-          'VIEW_CHANNEL',
-          'SEND_MESSAGES',
-          'MANAGE_MESSAGES',
-          'MANAGE_CHANNELS',
-          'READ_MESSAGE_HISTORY',
-        ],
+        allow: adminPermissions,
       },
       {
         id: Roles.STAFF,
-        allow: [
-          'VIEW_CHANNEL',
-          'SEND_MESSAGES',
-          'MANAGE_MESSAGES',
-          'MANAGE_CHANNELS',
-          'READ_MESSAGE_HISTORY',
-        ],
+        allow: adminPermissions,
       },
       {
         id: Roles.MODERATOR,
-        allow: [
-          'VIEW_CHANNEL',
-          'SEND_MESSAGES',
-          'MANAGE_MESSAGES',
-          'MANAGE_CHANNELS',
-          'READ_MESSAGE_HISTORY',
-        ],
+        allow: adminPermissions,
       },
       {
         id: Roles.MARKET_ASSISTANT,
-        allow: [
-          'VIEW_CHANNEL',
-          'SEND_MESSAGES',
-          'MANAGE_MESSAGES',
-          'MANAGE_CHANNELS',
-          'READ_MESSAGE_HISTORY',
-        ],
+        allow: adminPermissions,
       },
     ];
   };

@@ -20,24 +20,35 @@ export class CompleteButton {
 This channel will soon be deleted...`,
       });
 
-      const boostChannel = <TextChannel>(
+      const signupsChannel = <TextChannel>(
         interaction.guild.channels.cache.get(entity.signupsChannelId)
       );
-      const boostMessage = boostChannel.messages.cache.get(
-        entity.signupsMessageId
-      );
-      boostMessage.embeds[0].setColor('GREEN');
-      const { embeds } = boostMessage;
+      const signupsMessage =
+        signupsChannel.messages.cache.get(entity.signupsMessageId) ||
+        (await signupsChannel.messages.fetch(entity.signupsMessageId));
+      const openForAllMessage =
+        signupsChannel.messages.cache.get(entity.openForAllMessageId) ||
+        (await signupsChannel.messages.fetch(entity.openForAllMessageId));
+      signupsMessage.embeds[0].setColor('GREEN');
+      const { embeds } = signupsMessage;
 
-      boostMessage.edit({
-        content: '',
+      signupsMessage.edit({
+        content: `${Emojis.SUCCESS} Booking completed!`,
         embeds: embeds,
         components: [],
       });
 
-      await interaction.channel.messages.cache
-        .get(interaction.message.id)
-        .edit({ embeds: [], components: [] } as MessageOptions);
+      if (openForAllMessage) {
+        openForAllMessage.delete();
+      }
+
+      (
+        interaction.channel.messages.cache.get(interaction.message.id) ||
+        (await interaction.channel.messages.fetch(interaction.message.id))
+      ).edit({
+        embeds: interaction.message.embeds,
+        components: [],
+      } as MessageOptions);
 
       await repository.update({
         ...entity,

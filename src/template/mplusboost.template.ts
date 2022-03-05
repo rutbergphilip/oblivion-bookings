@@ -74,7 +74,7 @@ export class MythicPlusBoost {
     this.boostId = boostId;
   }
 
-  throttle(message: Message) {
+  async throttle(message: Message) {
     clearTimeout(this.timeout);
     this.timeout = setTimeout(async () => {
       await message.edit(this.buildEmbed(message));
@@ -109,19 +109,7 @@ ${Emojis.TEAMLEADER} Team Leader ${
 
     return {
       content: content,
-      embeds: [
-        new MessageEmbed(embed).setDescription(
-          [
-            this.picked.tankId,
-            this.picked.healerId,
-            this.picked.dpsOneId,
-            this.picked.dpsTwoId,
-            this.picked.keyHolderId,
-          ].some((signup) => !signup) && !this.isTeamTaken
-            ? template
-            : ''
-        ),
-      ],
+      embeds: [new MessageEmbed(embed).setDescription(template)],
       components: components,
     };
   }
@@ -165,13 +153,13 @@ ${Emojis.TEAMLEADER} Team Leader ${
       if (
         this.picked.keyHolderId &&
         !this.picked.tankId &&
-        this.isUniqueSignup(user)
+        this.isUniqueSignup(user.id)
       ) {
         this.picked.tankId = user.id;
       } else if (
         this.queues.keyHolderQueue.includes(user.id) &&
         !this.picked.tankId &&
-        this.isUniqueSignup(user)
+        this.isUniqueSignup(user.id)
       ) {
         this.picked.tankId = user.id;
         this.picked.keyHolderId = user.id;
@@ -182,8 +170,17 @@ ${Emojis.TEAMLEADER} Team Leader ${
       interaction.editReply({
         content: "You've been removed from the tank queue",
       });
-      if (this.pickAnotherKeyholder()) {
+
+      if (this.picked.tankId === user.id) {
+        this.picked.tankId = '';
         this.fillSlots();
+      }
+
+      if (this.picked.keyHolderId === user.id) {
+        this.picked.keyHolderId = '';
+        if (this.pickAnotherKeyholder()) {
+          this.fillSlots();
+        }
       }
     }
   }
@@ -202,13 +199,13 @@ ${Emojis.TEAMLEADER} Team Leader ${
       if (
         this.picked.keyHolderId &&
         !this.picked.healerId &&
-        this.isUniqueSignup(user)
+        this.isUniqueSignup(user.id)
       ) {
         this.picked.healerId = user.id;
       } else if (
         this.queues.keyHolderQueue.includes(user.id) &&
         !this.picked.healerId &&
-        this.isUniqueSignup(user)
+        this.isUniqueSignup(user.id)
       ) {
         this.picked.healerId = user.id;
         this.picked.keyHolderId = user.id;
@@ -222,15 +219,29 @@ ${Emojis.TEAMLEADER} Team Leader ${
       interaction.editReply({
         content: "You've been removed from the healer queue",
       });
-      if (this.pickAnotherKeyholder()) {
-        this.fillSlots();
+
+      if (this.picked.healerId === user.id) {
+        this.picked.healerId = '';
+        for (const healerInQueue of this.queues.healerQueue) {
+          if (this.isUniqueSignup(user.id)) {
+            this.picked.healerId = healerInQueue;
+            break;
+          }
+        }
+      }
+
+      if (this.picked.keyHolderId === user.id) {
+        this.picked.keyHolderId = '';
+        if (this.pickAnotherKeyholder()) {
+          this.fillSlots();
+        }
       }
     }
   }
 
   dpsClicked(interaction: ButtonInteraction, user: GuildMember) {
     if (!this.queues.dpsQueue.includes(user.id)) {
-      this.queues.teamLeaderQueue.push(user.id);
+      this.queues.dpsQueue.push(user.id);
       interaction.editReply({
         content: "You've been added to the dps queue",
       });
@@ -240,17 +251,18 @@ ${Emojis.TEAMLEADER} Team Leader ${
       }
 
       if (
-        !this.picked.keyHolderId &&
+        this.picked.keyHolderId &&
         [this.picked.dpsOneId, this.picked.dpsTwoId].includes('') &&
-        this.isUniqueSignup(user)
+        this.isUniqueSignup(user.id)
       ) {
         this.picked.dpsOneId === ''
           ? (this.picked.dpsOneId = user.id)
           : (this.picked.dpsTwoId = user.id);
       } else if (
+        !this.picked.keyHolderId &&
         this.queues.keyHolderQueue.includes(user.id) &&
         [this.picked.dpsOneId, this.picked.dpsTwoId].includes('') &&
-        this.isUniqueSignup(user)
+        this.isUniqueSignup(user.id)
       ) {
         this.picked.dpsOneId === ''
           ? (this.picked.dpsOneId = user.id)
@@ -263,8 +275,30 @@ ${Emojis.TEAMLEADER} Team Leader ${
       interaction.editReply({
         content: "You've been removed from the dps queue",
       });
-      if (this.pickAnotherKeyholder()) {
-        this.fillSlots();
+
+      if (this.picked.dpsOneId === user.id) {
+        this.picked.dpsOneId = '';
+        for (const dpsInQueue of this.queues.dpsQueue) {
+          if (this.isUniqueSignup(dpsInQueue)) {
+            this.picked.dpsOneId = dpsInQueue;
+            break;
+          }
+        }
+      } else if (this.picked.dpsTwoId === user.id) {
+        this.picked.dpsTwoId = '';
+        for (const dpsInQueue of this.queues.dpsQueue) {
+          if (this.isUniqueSignup(dpsInQueue)) {
+            this.picked.dpsTwoId = dpsInQueue;
+            break;
+          }
+        }
+      }
+
+      if (this.picked.keyHolderId === user.id) {
+        this.picked.keyHolderId = '';
+        if (this.pickAnotherKeyholder()) {
+          this.fillSlots();
+        }
       }
     }
   }
@@ -276,7 +310,7 @@ ${Emojis.TEAMLEADER} Team Leader ${
         content: "You've been added to the keyholder queue",
       });
 
-      if (this.picked.keyHolderId && !this.isUniqueSignup(user)) {
+      if (this.picked.keyHolderId && !this.isUniqueSignup(user.id)) {
         return;
       }
 
@@ -292,6 +326,7 @@ ${Emojis.TEAMLEADER} Team Leader ${
         content: "You've been removed from the keyholder queue",
       });
       if (this.picked.keyHolderId === user.id) {
+        this.picked.keyHolderId = '';
         if (this.pickAnotherKeyholder()) {
           this.fillSlots();
         }
@@ -390,25 +425,20 @@ ${Emojis.TEAMLEADER} Team Leader ${
     }
   }
 
-  isUniqueSignup(user: GuildMember) {
+  isUniqueSignup(userId: string) {
     return [
       this.picked.tankId,
       this.picked.healerId,
       this.picked.dpsOneId,
       this.picked.dpsTwoId,
-    ].every((sign) => sign !== user.id);
+    ].every((sign) => sign !== userId);
   }
 
   isReady(): boolean {
     return (
-      [
-        this.picked.tankId,
-        this.picked.healerId,
-        this.picked.dpsOneId,
-        this.picked.dpsTwoId,
-        this.picked.handlerId,
-        this.picked.keyHolderId,
-      ].every((id) => id) || this.isTeamTaken
+      Object.values(this.picked)
+        .slice(1)
+        .every((slot) => slot !== '') || this.isTeamTaken
     );
   }
 

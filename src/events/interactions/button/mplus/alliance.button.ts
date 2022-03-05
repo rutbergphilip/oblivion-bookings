@@ -26,7 +26,7 @@ export class AllianceButton {
       });
 
       const customer = interaction.guild.members.cache.get(interaction.user.id);
-      const ticketChannel = await interaction.guild.channels.create(
+      const requestChannel = await interaction.guild.channels.create(
         `mplus-request-${customer.user.username}`,
         {
           type: ChannelTypes.GUILD_TEXT,
@@ -39,8 +39,12 @@ export class AllianceButton {
       );
 
       const { embeds, components, entity } =
-        await MythicPlusRequestBuilder.build(customer, Factions.ALLIANCE);
-      const ticketMessage = await ticketChannel.send({
+        await MythicPlusRequestBuilder.build(
+          customer,
+          Factions.ALLIANCE,
+          requestChannel.id
+        );
+      const ticketMessage = await requestChannel.send({
         embeds: embeds,
         components: components,
       });
@@ -53,10 +57,10 @@ export class AllianceButton {
         components: components,
       });
       ticketMessage.pin();
-      await (await ticketChannel.send({ content: '``` ```' })).pin();
+      await (await requestChannel.send({ content: '``` ```' })).pin();
 
       await interaction.editReply({
-        content: `${Emojis.SUCCESS} Request ticket created! ${ticketChannel}`,
+        content: `${Emojis.SUCCESS} Request ticket created! ${requestChannel}`,
       });
 
       await new MythicPlusRequestCollector(interaction, ticketMessage).start();
