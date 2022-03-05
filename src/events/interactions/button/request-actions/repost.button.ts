@@ -80,6 +80,14 @@ export class RepostButton {
           handlerId: '',
           teamLeaderId: '',
         };
+        boost.queues = {
+          tankQueue: [],
+          healerQueue: [],
+          dpsQueue: [],
+          keyHolderQueue: [],
+          handlerQueue: [],
+          teamLeaderQueue: [],
+        };
         boost.hasStarted = false;
         boost.isOpenForAll = true;
         boost.isTeamTaken = false;

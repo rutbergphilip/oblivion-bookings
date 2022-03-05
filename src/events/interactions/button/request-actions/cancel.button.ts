@@ -57,14 +57,16 @@ This channel will soon be deleted...`,
 
         const signupsMessage =
           signupsChannel.messages?.cache?.get(this.entity.signupsMessageId) ||
-          (await signupsChannel.messages?.fetch(this.entity.signupsMessageId));
+          (await signupsChannel.messages
+            ?.fetch(this.entity.signupsMessageId)
+            .catch(() => null));
         const openForAllMessage =
           signupsChannel.messages?.cache?.get(
             this.entity.openForAllMessageId
           ) ||
-          (await signupsChannel.messages?.fetch(
-            this.entity.openForAllMessageId
-          ));
+          (await signupsChannel.messages
+            ?.fetch(this.entity.openForAllMessageId)
+            .catch(() => null));
 
         if (signupsMessage) {
           signupsMessage.delete().catch(console.error);

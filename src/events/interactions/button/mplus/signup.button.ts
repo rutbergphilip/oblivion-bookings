@@ -139,32 +139,22 @@ export class SignupButton {
 
         const openForAllMessage =
           signupsChannel.messages.cache.get(entity.openForAllMessageId) ||
-          (await signupsChannel.messages.fetch(entity.openForAllMessageId));
+          (await signupsChannel.messages
+            .fetch(entity.openForAllMessageId)
+            .catch(() => null));
 
         if (openForAllMessage) {
           openForAllMessage.delete();
         }
 
-        await requestChannel.edit(
+        await requestChannel.permissionOverwrites.edit(
+          boost.picked.handlerId || boost.picked.teamLeaderId,
           {
-            permissionOverwrites: [
-              {
-                id: boost.picked.handlerId || boost.picked.teamLeaderId,
-                allow: [
-                  'VIEW_CHANNEL',
-                  'SEND_MESSAGES',
-                  'READ_MESSAGE_HISTORY',
-                ],
-              },
-            ],
+            MANAGE_MESSAGES: false,
+            READ_MESSAGE_HISTORY: true,
+            SEND_MESSAGES: true,
+            VIEW_CHANNEL: true,
           }
-          // boost.picked.handlerId || boost.picked.teamLeaderId,
-          // {
-          //   MANAGE_MESSAGES: false,
-          //   READ_MESSAGE_HISTORY: true,
-          //   SEND_MESSAGES: true,
-          //   VIEW_CHANNEL: true,
-          // }
         );
       }
     }
