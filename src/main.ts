@@ -1,3 +1,5 @@
+import { RequestEmbedEntity } from './persistance/entities/requestembed.entity';
+import { GlobalRepository } from './persistance/repositories/global.repository';
 import { ButtonFactory } from './events/interactions/button/button.factory';
 import { RequestPanelBuilder } from './build/requestPanel.build';
 import { Client, Intents, ButtonInteraction } from 'discord.js';
@@ -9,6 +11,7 @@ require('dotenv').config();
 class Main {
   private readonly client: Client;
   private readonly rest: REST;
+  private requestPanelId: string;
 
   constructor() {
     this.rest = new REST({ version: '9' }).setToken(process.env.DISCORD_TOKEN);
@@ -33,6 +36,10 @@ class Main {
         name: 'Starting...',
       });
 
+      this.requestPanelId = (
+        await new GlobalRepository().get<RequestEmbedEntity>('request')
+      ).id;
+
       await RequestPanelBuilder.build(this.client);
 
       console.log('Ready!');
@@ -46,7 +53,7 @@ class Main {
       const factory = new ButtonFactory();
       switch (true) {
         case interaction.isButton():
-          await factory.allocateTask(interaction as ButtonInteraction);
+          await factory.run(interaction as ButtonInteraction);
           break;
       }
     });
@@ -57,6 +64,12 @@ class Main {
       }
       if (message.type === 'CHANNEL_PINNED_MESSAGE') {
         message.delete();
+      }
+    });
+
+    this.client.on('messageDelete', async (message) => {
+      if (message.id === this.requestPanelId) {
+        this.requestPanelId = (await RequestPanelBuilder.build(this.client)).id;
       }
     });
 

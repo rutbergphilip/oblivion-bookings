@@ -8,9 +8,7 @@ import { RepostButton } from './request-actions/repost.button';
 import { CompleteButton } from './request-actions/complete.button';
 
 export class ButtonFactory {
-  constructor() {}
-
-  async allocateTask(interaction: ButtonInteraction): Promise<void> {
+  async run(interaction: ButtonInteraction): Promise<void> {
     const buttonType = interaction.customId.toLowerCase().split('-')[0];
     try {
       switch (true) {

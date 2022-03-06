@@ -10,7 +10,7 @@ import { Channels } from '../constants/channels.enum';
 export class RequestPanelBuilder {
   private static message: Message;
 
-  static async build(client: Client): Promise<void> {
+  static async build(client: Client): Promise<RequestEmbedEntity> {
     const repository = new GlobalRepository();
     const requestPanel = await repository.get<RequestEmbedEntity>('requests');
 
@@ -39,11 +39,10 @@ export class RequestPanelBuilder {
       return;
     }
 
-    await repository.insert({
+    return await repository.insert({
       id: this.message.id,
       name: 'requests',
     });
-    return;
   }
 
   static getEmbed(): MessageEmbed {

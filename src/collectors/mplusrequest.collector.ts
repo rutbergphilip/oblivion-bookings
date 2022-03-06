@@ -56,9 +56,9 @@ export class MythicPlusRequestCollector {
   private readonly questions = [
     '**What key Level would you like (0-24)**',
     '**How many keys would you like?**',
-    "**Select What type of armor you'd like (\n0 = Any,\n1 = Cloth,\n2 = Plate,\n3 = Mail,\n4 = Leather)**",
-    '**Please type what specific key/Keys you would like separated with commas (`,`)**',
-    '**Would you like the key(s) timed or not? (1 = Yes, 0 = No)**',
+    "**Select What type of armor you'd like\n0 = Any,\n1 = Cloth,\n2 = Plate,\n3 = Mail,\n4 = Leather**",
+    '**Please type what specific key/keys you would like separated with commas (`,`)**',
+    '**Would you like the key(s) timed or not?\n1 = Yes,\n0 = No**',
     '**Please type your desired payment realms separated with commas (`,`)**',
     '**Do you have any additional notes? If not, type `no`**',
   ];
@@ -72,8 +72,7 @@ export class MythicPlusRequestCollector {
     this.channel = <TextChannel>bookingMessage.channel;
     this.collector = this.channel.createMessageCollector({
       filter: this.filter,
-      // time: 10000,
-      time: 5 * 60000,
+      time: 300000,
     });
   }
 
