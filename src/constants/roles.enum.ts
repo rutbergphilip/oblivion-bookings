@@ -28,4 +28,8 @@ export enum Roles {
   // A_ALL_STAR_LEADER = '941045049712582749',
   // H_VERIFIED_LEADER = '941045545022140486',
   // A_VERIFIED_LEADER = '941044597826678825 ',
+
+  // TANK = '',
+  // HEALER = '',
+  // DPS = '',
 }

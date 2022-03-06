@@ -1,3 +1,4 @@
+import { MythicPlusCache } from './../../../../cache/mplus.cache';
 import { RequestActionPermissions } from './../../../../permissions/requestactions.permissions';
 import {
   ButtonInteraction,
@@ -34,6 +35,7 @@ This channel will soon be deleted...`,
         } as MessageOptions);
 
       await repository.delete(entity._id);
+      MythicPlusCache.delete(entity._id);
     } catch (error) {
       console.error(error);
     } finally {

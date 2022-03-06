@@ -2,6 +2,7 @@ import { RequestActionPermissions } from './../../../../permissions/requestactio
 import { ButtonInteraction, MessageOptions, TextChannel } from 'discord.js';
 import { RequestRepository } from '../../../../persistance/repositories/mplusrequests.repository';
 import { Emojis } from '../../../../constants/emojis.enum';
+import { MythicPlusCache } from '../../../../cache/mplus.cache';
 
 export class CompleteButton {
   static async run(interaction: ButtonInteraction) {
@@ -59,6 +60,7 @@ This channel will soon be deleted...`,
 
       setTimeout(() => {
         interaction.channel.delete();
+        MythicPlusCache.delete(entity._id);
       }, 10000);
     } catch (error) {
       console.error(error);
