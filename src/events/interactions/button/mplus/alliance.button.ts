@@ -1,21 +1,11 @@
 import { RequestUtils } from './../../../../utils/requests.utils';
 import { MythicPlusRequestCollector } from './../../../../collectors/mplusrequest.collector';
-import { Global } from '../../../../constants/global.enum';
 import { Factions } from '../../../../constants/factions.enum';
 import { MythicPlusRequestBuilder } from '../../../../build/mplusRequest.build';
-import {
-  ButtonInteraction,
-  GuildMember,
-  MessageComponentInteraction,
-  MessageEmbed,
-  OverwriteResolvable,
-  User,
-} from 'discord.js';
+import { ButtonInteraction, MessageEmbed } from 'discord.js';
 import { ChannelTypes } from 'discord.js/typings/enums';
 import { Emojis } from '../../../../constants/emojis.enum';
 import { Channels } from '../../../../constants/channels.enum';
-import { Roles } from '../../../../constants/roles.enum';
-import { RequestRepository } from '../../../../persistance/repositories/mplusrequests.repository';
 
 export class AllianceButton {
   static async run(interaction: ButtonInteraction) {

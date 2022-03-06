@@ -1,4 +1,3 @@
-import { MythicPlusRequestEntity } from './../../../../persistance/entities/mplusrequest.entity';
 import { RequestActionPermissions } from './../../../../permissions/requestactions.permissions';
 import {
   ButtonInteraction,
@@ -8,11 +7,8 @@ import {
 } from 'discord.js';
 import { RequestRepository } from '../../../../persistance/repositories/mplusrequests.repository';
 import { Emojis } from '../../../../constants/emojis.enum';
-import { MythicPlusCache } from '../../../../cache/mplus.cache';
 
 export class CancelButton {
-  private static entity: MythicPlusRequestEntity;
-
   static async run(interaction: ButtonInteraction) {
     if (!(await RequestActionPermissions.isEligable(interaction))) {
       return interaction.reply({
@@ -20,10 +16,10 @@ export class CancelButton {
       });
     }
 
-    try {
-      const repository = new RequestRepository();
-      this.entity = await repository.get(interaction.customId.split('-')[1]);
+    const repository = new RequestRepository();
+    const entity = await repository.get(interaction.customId.split('-')[1]);
 
+    try {
       await interaction.reply({
         content: `Request canceled.
 
@@ -37,7 +33,7 @@ This channel will soon be deleted...`,
           components: [],
         } as MessageOptions);
 
-      await repository.delete(this.entity._id);
+      await repository.delete(entity._id);
     } catch (error) {
       console.error(error);
     } finally {
@@ -45,27 +41,23 @@ This channel will soon be deleted...`,
         interaction.channel.delete().catch(console.error);
 
         const signupsChannel = <TextChannel>(
-          (interaction.guild.channels.cache.get(this.entity.signupsChannelId) ||
-            (await interaction.guild.channels.fetch(
-              this.entity.signupsChannelId
-            )))
+          (interaction.guild.channels.cache.get(entity.signupsChannelId) ||
+            (await interaction.guild.channels.fetch(entity.signupsChannelId)))
         );
 
         if (!signupsChannel) {
           return;
         }
 
-        const signupsMessage =
-          signupsChannel.messages?.cache?.get(this.entity.signupsMessageId) ||
+        const signupsMessage: Message =
+          signupsChannel.messages.cache.get(entity.signupsMessageId) ||
           (await signupsChannel.messages
-            ?.fetch(this.entity.signupsMessageId)
+            .fetch(entity.signupsMessageId)
             .catch(() => null));
-        const openForAllMessage =
-          signupsChannel.messages?.cache?.get(
-            this.entity.openForAllMessageId
-          ) ||
+        const openForAllMessage: Message =
+          signupsChannel.messages.cache.get(entity.openForAllMessageId) ||
           (await signupsChannel.messages
-            ?.fetch(this.entity.openForAllMessageId)
+            .fetch(entity.openForAllMessageId)
             .catch(() => null));
 
         if (signupsMessage) {
@@ -74,7 +66,7 @@ This channel will soon be deleted...`,
         if (openForAllMessage) {
           openForAllMessage.delete().catch(console.error);
         }
-      }, 10000);
+      }, 180000);
     }
   }
 }

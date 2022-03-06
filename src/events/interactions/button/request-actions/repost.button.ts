@@ -4,7 +4,7 @@ import { ActionRowBuilder } from './../../../../build/rows.build';
 import { Roles } from './../../../../constants/roles.enum';
 import { Factions } from './../../../../constants/factions.enum';
 import { RequestActionPermissions } from './../../../../permissions/requestactions.permissions';
-import { ButtonInteraction, TextChannel } from 'discord.js';
+import { ButtonInteraction, TextChannel, Message } from 'discord.js';
 import { RequestRepository } from '../../../../persistance/repositories/mplusrequests.repository';
 import { Emojis } from '../../../../constants/emojis.enum';
 import { MythicPlusCache } from '../../../../cache/mplus.cache';
@@ -28,17 +28,25 @@ export class RepostButton {
         (interaction.guild.channels.cache.get(entity.signupsChannelId) ||
           (await interaction.guild.channels.fetch(entity.signupsChannelId)))
       );
+      const requestChannel = <TextChannel>(
+        (interaction.channel.partial
+          ? await interaction.channel.fetch()
+          : interaction.channel)
+      );
 
-      let signupsMessage =
+      let signupsMessage: Message =
         signupsChannel.messages.cache.get(entity.signupsMessageId) ||
         (await signupsChannel.messages.fetch(entity.signupsMessageId));
-      const openForAllMessage =
+      const openForAllMessage: Message =
         signupsChannel.messages.cache.get(entity.openForAllMessageId) ||
         (await signupsChannel.messages
           .fetch(entity.openForAllMessageId)
           .catch(() => null));
+
       const { embeds } = signupsMessage;
-      embeds[0].description = `${Emojis.TEAMLEADER} Team Leader`;
+      embeds[0]
+        .setDescription(`${Emojis.TEAMLEADER} Team Leader`)
+        .setColor(Colors.BOOST_CREATING);
 
       signupsMessage.delete();
 
@@ -57,6 +65,10 @@ export class RepostButton {
           entity._id
         ),
       });
+
+      requestChannel.permissionOverwrites.delete(
+        entity.picked.handlerId || entity.picked.teamLeaderId
+      );
 
       let boost = MythicPlusCache.get(entity._id);
       if (!boost) {
@@ -111,6 +123,7 @@ export class RepostButton {
           isTeamTaken: false,
           bookingSentAt: new Date().getTime(),
           signupsMessageId: signupsMessage.id,
+          openForAllMessageId: '',
         },
       });
 

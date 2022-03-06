@@ -44,7 +44,7 @@ export class SignupButton {
             });
             return;
           }
-          boost.tankClicked(interaction, user);
+          await boost.tankClicked(interaction, user);
           break;
         case buttonType === 'healer':
           if (
@@ -56,7 +56,7 @@ export class SignupButton {
             });
             return;
           }
-          boost.healerClicked(interaction, user);
+          await boost.healerClicked(interaction, user);
           break;
         case buttonType === 'dps':
           if (
@@ -68,7 +68,7 @@ export class SignupButton {
             });
             return;
           }
-          boost.dpsClicked(interaction, user);
+          await boost.dpsClicked(interaction, user);
           break;
         case buttonType === 'teamtake':
           if (
@@ -89,13 +89,13 @@ export class SignupButton {
             });
             return;
           }
-          boost.teamClicked(interaction, user);
+          await boost.teamClicked(interaction, user);
           break;
         case buttonType === 'collector':
-          boost.handlerClicked(interaction, user);
+          await boost.handlerClicked(interaction, user);
           break;
         case buttonType === 'keyholder':
-          boost.keyholderClicked(interaction, user);
+          await boost.keyholderClicked(interaction, user);
           break;
         default:
           return;
@@ -116,6 +116,7 @@ export class SignupButton {
           ...entity,
           ...{
             hasStarted: true,
+            isTeamTaken: boost.isTeamTaken,
             picked: {
               teamLeaderId: boost.picked.teamLeaderId,
               handlerId: boost.picked.handlerId,

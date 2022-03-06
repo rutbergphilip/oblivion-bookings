@@ -6,13 +6,9 @@ import { Emojis } from './../constants/emojis.enum';
 import {
   ButtonInteraction,
   Collection,
-  CommandInteraction,
   Message,
-  MessageActionRow,
   MessageCollector,
   MessageEmbed,
-  MessageSelectMenu,
-  SelectMenuInteraction,
   TextChannel,
 } from 'discord.js';
 import { MythicPlusCache } from '../cache/mplus.cache';
@@ -82,15 +78,6 @@ export class MythicPlusRequestCollector {
   }
 
   async start() {
-    const repository = new RequestRepository();
-    const entity = await repository.get(this.requestId);
-    await repository.update({
-      ...entity,
-      ...{
-        hasActiveCollector: true,
-      },
-    });
-
     const initialQuestion = await this.channel.send({
       content: this.questions[this.questionIndex],
     });

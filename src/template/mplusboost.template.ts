@@ -114,7 +114,7 @@ ${Emojis.TEAMLEADER} Team Leader ${
     };
   }
 
-  teamClicked(interaction: ButtonInteraction, user: GuildMember) {
+  async teamClicked(interaction: ButtonInteraction, user: GuildMember) {
     if (!this.queues.teamLeaderQueue.includes(user.id)) {
       this.queues.teamLeaderQueue.push(user.id);
       interaction.editReply({
@@ -144,7 +144,7 @@ ${Emojis.TEAMLEADER} Team Leader ${
     }
   }
 
-  tankClicked(interaction: ButtonInteraction, user: GuildMember) {
+  async tankClicked(interaction: ButtonInteraction, user: GuildMember) {
     if (!this.queues.tankQueue.includes(user.id)) {
       this.queues.tankQueue.push(user.id);
       interaction.editReply({
@@ -185,7 +185,7 @@ ${Emojis.TEAMLEADER} Team Leader ${
     }
   }
 
-  healerClicked(interaction: ButtonInteraction, user: GuildMember) {
+  async healerClicked(interaction: ButtonInteraction, user: GuildMember) {
     if (!this.queues.healerQueue.includes(user.id)) {
       this.queues.healerQueue.push(user.id);
       interaction.editReply({
@@ -239,7 +239,7 @@ ${Emojis.TEAMLEADER} Team Leader ${
     }
   }
 
-  dpsClicked(interaction: ButtonInteraction, user: GuildMember) {
+  async dpsClicked(interaction: ButtonInteraction, user: GuildMember) {
     if (!this.queues.dpsQueue.includes(user.id)) {
       this.queues.dpsQueue.push(user.id);
       interaction.editReply({
@@ -303,7 +303,7 @@ ${Emojis.TEAMLEADER} Team Leader ${
     }
   }
 
-  keyholderClicked(interaction: ButtonInteraction, user: GuildMember) {
+  async keyholderClicked(interaction: ButtonInteraction, user: GuildMember) {
     if (!this.queues.keyHolderQueue.includes(user.id)) {
       this.queues.keyHolderQueue.push(user.id);
       interaction.editReply({
@@ -334,7 +334,7 @@ ${Emojis.TEAMLEADER} Team Leader ${
     }
   }
 
-  handlerClicked(interaction: ButtonInteraction, user: GuildMember) {
+  async handlerClicked(interaction: ButtonInteraction, user: GuildMember) {
     if (!this.queues.handlerQueue.includes(user.id)) {
       this.queues.handlerQueue.push(user.id);
       interaction.editReply({

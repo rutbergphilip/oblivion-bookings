@@ -5,7 +5,6 @@ export interface IMythicPlusCache {
   type: RequestTypes;
   faction: Factions;
   collector?: MessageCollector;
-  hasActiveCollector?: boolean;
   isComplete: boolean;
   requestChannelId?: string;
   signupsChannelId?: string;

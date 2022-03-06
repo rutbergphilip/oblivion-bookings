@@ -1,21 +1,15 @@
 import { RequestEmbedEntity } from '../entities/requestembed.entity';
 import { ConnectionService } from '../connection.service';
+import { WithId } from 'mongodb';
 
 export class GlobalRepository<T> {
   private readonly COLLECTION = 'global';
 
-  // async get<T>(query: string): Promise<T> {
-  //   const database = await ConnectionService.get();
-  //   return await database
-  //     .collection(this.COLLECTION)
-  //     .findOne({ name: query });
-  // }
-
-  async getRequestPanel(): Promise<RequestEmbedEntity> {
+  async get<T>(query: string): Promise<WithId<T>> {
     const database = await ConnectionService.get();
     return await database
-      .collection<RequestEmbedEntity>(this.COLLECTION)
-      .findOne({ name: 'requests' });
+      .collection(this.COLLECTION)
+      .findOne<WithId<T>>({ name: query });
   }
 
   async insert(entity: RequestEmbedEntity): Promise<RequestEmbedEntity> {

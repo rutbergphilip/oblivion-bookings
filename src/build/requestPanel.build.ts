@@ -1,3 +1,4 @@
+import { RequestEmbedEntity } from './../persistance/entities/requestembed.entity';
 import { Logos } from '../constants/logos.enum';
 import { Colors } from '../constants/colors.enum';
 import { Global } from '../constants/global.enum';
@@ -11,7 +12,7 @@ export class RequestPanelBuilder {
 
   static async build(client: Client): Promise<void> {
     const repository = new GlobalRepository();
-    const requestPanel = await repository.getRequestPanel();
+    const requestPanel = await repository.get<RequestEmbedEntity>('requests');
 
     const channel = <TextChannel>(
       client.guilds.cache

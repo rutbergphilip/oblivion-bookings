@@ -5,7 +5,6 @@ import { RequestTypes } from '../constants/request.enum';
 import { RequestRepository } from '../persistance/repositories/mplusrequests.repository';
 import { GuildMember, MessageEmbed } from 'discord.js';
 import { ActionRowBuilder } from './rows.build';
-import { Channels } from '../constants/channels.enum';
 import { IRequestBuilder } from '../interfaces/requestbuilder.interface';
 
 export class MythicPlusRequestBuilder {
@@ -21,19 +20,27 @@ export class MythicPlusRequestBuilder {
       isComplete: false,
       faction: faction,
       isOpenForAll: false,
+      isTeamTaken: false,
       requestChannelId: requestChannelId,
     });
 
     return {
-      embeds: [this.getEmbed(customer)],
+      embeds: [this.getEmbed(customer, faction)],
       components: [ActionRowBuilder.buildRequestActionRow(entity._id)],
       entity: entity,
     };
   }
 
-  static getEmbed(customer: GuildMember): MessageEmbed {
+  static getEmbed(customer: GuildMember, faction: Factions): MessageEmbed {
     return new MessageEmbed()
-      .setTitle('Mythic Plus Booking Request')
+      .setTitle(
+        `${faction
+          .charAt(0)
+          .toUpperCase()
+          .concat(
+            faction.substring(1, faction.length).toLowerCase()
+          )} Mythic Plus Booking Request`
+      )
       .setDescription(
         `
 Hey there ${customer}, you will be asked a series of questions to help us fulfill your request.
