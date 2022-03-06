@@ -35,39 +35,39 @@ export class SignupButton {
     try {
       switch (true) {
         case buttonType === 'tank':
-          if (
-            !user.roles.cache.has(Roles.TANK) &&
-            !RolePermissions.isMarketAssistantOrAbove(user)
-          ) {
-            interaction.editReply({
-              content: `You're missing the <@&${Roles.TANK}> role.`,
-            });
-            return;
-          }
+          // if (
+          //   !user.roles.cache.has(Roles.TANK) &&
+          //   !RolePermissions.isMarketAssistantOrAbove(user)
+          // ) {
+          //   interaction.editReply({
+          //     content: `You're missing the <@&${Roles.TANK}> role.`,
+          //   });
+          //   return;
+          // }
           await boost.tankClicked(interaction, user);
           break;
         case buttonType === 'healer':
-          if (
-            !user.roles.cache.has(Roles.HEALER) &&
-            !RolePermissions.isMarketAssistantOrAbove(user)
-          ) {
-            interaction.editReply({
-              content: `You're missing the <@&${Roles.HEALER}> role.`,
-            });
-            return;
-          }
+          // if (
+          //   !user.roles.cache.has(Roles.HEALER) &&
+          //   !RolePermissions.isMarketAssistantOrAbove(user)
+          // ) {
+          //   interaction.editReply({
+          //     content: `You're missing the <@&${Roles.HEALER}> role.`,
+          //   });
+          //   return;
+          // }
           await boost.healerClicked(interaction, user);
           break;
         case buttonType === 'dps':
-          if (
-            !user.roles.cache.has(Roles.DPS) &&
-            !RolePermissions.isMarketAssistantOrAbove(user)
-          ) {
-            interaction.editReply({
-              content: `You're missing the <@&${Roles.DPS}> role.`,
-            });
-            return;
-          }
+          // if (
+          //   !user.roles.cache.has(Roles.DPS) &&
+          //   !RolePermissions.isMarketAssistantOrAbove(user)
+          // ) {
+          //   interaction.editReply({
+          //     content: `You're missing the <@&${Roles.DPS}> role.`,
+          //   });
+          //   return;
+          // }
           await boost.dpsClicked(interaction, user);
           break;
         case buttonType === 'teamtake':
@@ -85,7 +85,7 @@ export class SignupButton {
             !RolePermissions.isMarketAssistantOrAbove(user)
           ) {
             interaction.editReply({
-              content: `You're missing team leader roles`,
+              content: `You're missing team leader role(s)`,
             });
             return;
           }
