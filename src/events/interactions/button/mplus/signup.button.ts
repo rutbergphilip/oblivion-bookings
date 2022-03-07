@@ -4,7 +4,7 @@ import { RolePermissions } from '../../../../permissions/role.permission';
 import { Roles } from './../../../../constants/roles.enum';
 import { MythicPlusCache } from './../../../../cache/mplus.cache';
 import { ButtonInteraction, TextChannel } from 'discord.js';
-import { RequestRepository } from '../../../../persistance/repositories/mplusrequests.repository';
+import { MythicPlusRequestRepository } from '../../../../persistance/repositories/mplusrequests.repository';
 import { Emojis } from '../../../../constants/emojis.enum';
 
 export class SignupButton {
@@ -26,7 +26,7 @@ export class SignupButton {
       });
     }
 
-    const repository = new RequestRepository();
+    const repository = new MythicPlusRequestRepository();
     const entity = await repository.get(boost.boostId);
 
     const signupsMessage = interaction.channel.messages.cache.get(

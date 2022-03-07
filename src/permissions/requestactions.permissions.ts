@@ -1,11 +1,11 @@
 import { RolePermissions } from './role.permission';
-import { RequestRepository } from './../persistance/repositories/mplusrequests.repository';
+import { MythicPlusRequestRepository } from './../persistance/repositories/mplusrequests.repository';
 import { ButtonInteraction } from 'discord.js';
 
 export class RequestActionPermissions {
   static async isEligable(interaction: ButtonInteraction): Promise<boolean> {
     const requestIdArgs = interaction.customId.split('-');
-    const repository = new RequestRepository();
+    const repository = new MythicPlusRequestRepository();
     const entity = await repository.get(requestIdArgs[1]);
     const user = interaction.guild.members.cache.get(interaction.user.id);
 

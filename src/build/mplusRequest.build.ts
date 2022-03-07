@@ -2,7 +2,7 @@ import { Colors } from '../constants/colors.enum';
 import { Logos } from '../constants/logos.enum';
 import { Factions } from '../constants/factions.enum';
 import { RequestTypes } from '../constants/request.enum';
-import { RequestRepository } from '../persistance/repositories/mplusrequests.repository';
+import { MythicPlusRequestRepository } from '../persistance/repositories/mplusrequests.repository';
 import { GuildMember, MessageEmbed } from 'discord.js';
 import { ActionRowBuilder } from './rows.build';
 import { IRequestBuilder } from '../interfaces/requestbuilder.interface';
@@ -13,7 +13,7 @@ export class MythicPlusRequestBuilder {
     faction: Factions,
     requestChannelId: string
   ): Promise<IRequestBuilder> {
-    const repository = new RequestRepository();
+    const repository = new MythicPlusRequestRepository();
     const entity = await repository.insert({
       type: RequestTypes.MPLUS,
       customerId: customer.id,

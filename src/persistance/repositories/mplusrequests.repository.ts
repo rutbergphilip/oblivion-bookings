@@ -2,7 +2,7 @@ import { MythicPlusRequestEntity } from './../entities/mplusrequest.entity';
 import { ConnectionService } from '../connection.service';
 import { ObjectId } from 'mongodb';
 
-export class RequestRepository {
+export class MythicPlusRequestRepository {
   private readonly COLLECTION = 'mplusrequests';
 
   async get(objectId: ObjectId | string): Promise<MythicPlusRequestEntity> {

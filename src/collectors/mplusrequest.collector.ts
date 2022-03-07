@@ -1,6 +1,6 @@
 import { Roles } from './../constants/roles.enum';
 import { MythicPlusBoost } from './../template/mplusboost.template';
-import { RequestRepository } from './../persistance/repositories/mplusrequests.repository';
+import { MythicPlusRequestRepository } from './../persistance/repositories/mplusrequests.repository';
 import { MythicPlusBuilder } from '../build/mplusSignups.build';
 import { Emojis } from './../constants/emojis.enum';
 import {
@@ -164,7 +164,7 @@ Closing this ticket...`,
           await new MythicPlusBuilder(requestId).processData(collected)
         ).build();
 
-        const repository = new RequestRepository();
+        const repository = new MythicPlusRequestRepository();
         const entity = await repository.get(requestId);
 
         const boostMessage = await (<TextChannel>(

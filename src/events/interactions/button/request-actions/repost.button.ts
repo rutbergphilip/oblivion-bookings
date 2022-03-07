@@ -5,7 +5,7 @@ import { Roles } from './../../../../constants/roles.enum';
 import { Factions } from './../../../../constants/factions.enum';
 import { RequestActionPermissions } from './../../../../permissions/requestactions.permissions';
 import { ButtonInteraction, TextChannel, Message } from 'discord.js';
-import { RequestRepository } from '../../../../persistance/repositories/mplusrequests.repository';
+import { MythicPlusRequestRepository } from '../../../../persistance/repositories/mplusrequests.repository';
 import { Emojis } from '../../../../constants/emojis.enum';
 import { MythicPlusCache } from '../../../../cache/mplus.cache';
 
@@ -17,7 +17,7 @@ export class RepostButton {
       });
     }
     try {
-      const repository = new RequestRepository();
+      const repository = new MythicPlusRequestRepository();
       const entity = await repository.get(interaction.customId.split('-')[1]);
 
       await interaction.reply({

@@ -3,7 +3,7 @@ import { Roles } from './../constants/roles.enum';
 import { Colors } from '../constants/colors.enum';
 import { Factions } from '../constants/factions.enum';
 import { Global } from '../constants/global.enum';
-import { RequestRepository } from '../persistance/repositories/mplusrequests.repository';
+import { MythicPlusRequestRepository } from '../persistance/repositories/mplusrequests.repository';
 import { Collection, Message, MessageEmbed, MessageOptions } from 'discord.js';
 import { ActionRowBuilder } from './rows.build';
 import { Channels } from '../constants/channels.enum';
@@ -25,13 +25,13 @@ export class MythicPlusBuilder {
   }
 
   async processData(collected: Collection<string, Message<boolean>>) {
-    const requestRepository = new RequestRepository();
-    const entity = await requestRepository.get(this.requestId);
+    const repository = new MythicPlusRequestRepository();
+    const entity = await repository.get(this.requestId);
     this.faction = entity.faction;
 
     await this.validateQuestions(collected);
 
-    await requestRepository.update({
+    await repository.update({
       ...entity,
       ...{
         signupsChannelId: this.getChannel(),

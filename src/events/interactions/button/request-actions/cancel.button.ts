@@ -6,7 +6,7 @@ import {
   MessageOptions,
   TextChannel,
 } from 'discord.js';
-import { RequestRepository } from '../../../../persistance/repositories/mplusrequests.repository';
+import { MythicPlusRequestRepository } from '../../../../persistance/repositories/mplusrequests.repository';
 import { Emojis } from '../../../../constants/emojis.enum';
 
 export class CancelButton {
@@ -17,7 +17,7 @@ export class CancelButton {
       });
     }
 
-    const repository = new RequestRepository();
+    const repository = new MythicPlusRequestRepository();
     const entity = await repository.get(interaction.customId.split('-')[1]);
 
     try {
