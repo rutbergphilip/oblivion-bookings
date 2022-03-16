@@ -1,8 +1,15 @@
+import { MenuFactory } from './events/interactions/menu/menu.factory';
+import { InteractionFactory } from './events/interactions/interaction.factory';
 import { RequestEmbedEntity } from './persistance/entities/requestembed.entity';
 import { GlobalRepository } from './persistance/repositories/global.repository';
 import { ButtonFactory } from './events/interactions/button/button.factory';
 import { RequestPanelBuilder } from './build/requestPanel.build';
-import { Client, Intents, ButtonInteraction } from 'discord.js';
+import {
+  Client,
+  Intents,
+  ButtonInteraction,
+  SelectMenuInteraction,
+} from 'discord.js';
 import { REST } from '@discordjs/rest';
 import { Routes } from 'discord-api-types/v9';
 import { ActivityTypes } from 'discord.js/typings/enums';
@@ -36,11 +43,7 @@ class Main {
         name: 'Starting...',
       });
 
-      this.requestPanelId = (
-        await new GlobalRepository().get<RequestEmbedEntity>('request')
-      ).id;
-
-      await RequestPanelBuilder.build(this.client);
+      this.requestPanelId = (await RequestPanelBuilder.build(this.client))?.id;
 
       console.log('Ready!');
       this.client.user.setActivity({
@@ -50,11 +53,11 @@ class Main {
     });
 
     this.client.on('interactionCreate', async (interaction) => {
-      const factory = new ButtonFactory();
-      switch (true) {
-        case interaction.isButton():
-          await factory.run(interaction as ButtonInteraction);
-          break;
+      const factory = InteractionFactory.get(interaction);
+      if (factory) {
+        await factory.run(
+          <SelectMenuInteraction | ButtonInteraction>interaction
+        );
       }
     });
 
@@ -63,13 +66,15 @@ class Main {
         message = await message.fetch();
       }
       if (message.type === 'CHANNEL_PINNED_MESSAGE') {
-        message.delete();
+        message.delete().catch(() => null);
       }
     });
 
     this.client.on('messageDelete', async (message) => {
       if (message.id === this.requestPanelId) {
-        this.requestPanelId = (await RequestPanelBuilder.build(this.client)).id;
+        this.requestPanelId = (
+          await RequestPanelBuilder.build(this.client)
+        )?.id;
       }
     });
 

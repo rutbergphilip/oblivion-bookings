@@ -1,6 +1,8 @@
 export enum Action {
-  HORDE_MPLUS = 'horde',
-  ALLIANCE_MPLUS = 'alliance',
+  HORDE = 'horde',
+  ALLIANCE = 'alliance',
+  HORDE_MPLUS = 'horde_mplus',
+  ALLIANCE_MPLUS = 'alliance_mplus',
   ACCEPT = 'accept',
   DENY = 'deny',
   CLOSE_CHANNEL = 'close-channel',

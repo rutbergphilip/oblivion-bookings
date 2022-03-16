@@ -44,6 +44,8 @@ export class MythicPlusRequestBuilder {
       .setDescription(
         `
 Hey there ${customer}, you will be asked a series of questions to help us fulfill your request.
+
+During the question process, you can at any point type \`stop\` to stop your request.
 `
       )
       .setThumbnail(Logos.MAIN)

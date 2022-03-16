@@ -22,14 +22,21 @@ This channel will soon be deleted...`,
       });
 
       const signupsChannel = <TextChannel>(
-        interaction.guild.channels.cache.get(entity.signupsChannelId)
+        (interaction.guild.channels.cache.get(entity.signupsChannelId) ||
+          (await interaction.guild.channels
+            .fetch(entity.signupsChannelId)
+            .catch(() => null)))
       );
       const signupsMessage =
         signupsChannel.messages.cache.get(entity.signupsMessageId) ||
         (await signupsChannel.messages.fetch(entity.signupsMessageId));
-      const openForAllMessage =
-        signupsChannel.messages.cache.get(entity.openForAllMessageId) ||
-        (await signupsChannel.messages.fetch(entity.openForAllMessageId));
+      const openForAllMessage = entity.openForAllMessageId
+        ? signupsChannel.messages.cache.get(entity.openForAllMessageId) ||
+          (await signupsChannel.messages
+            .fetch(entity.openForAllMessageId)
+            .catch(() => null))
+        : null;
+
       signupsMessage.embeds[0].setColor('GREEN');
       const { embeds } = signupsMessage;
 

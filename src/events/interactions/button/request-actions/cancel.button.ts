@@ -42,6 +42,10 @@ This channel will soon be deleted...`,
       setTimeout(async () => {
         interaction.channel.delete().catch(console.error);
 
+        if (!entity.signupsChannelId) {
+          return;
+        }
+
         const signupsChannel = <TextChannel>(
           (interaction.guild.channels.cache.get(entity.signupsChannelId) ||
             (await interaction.guild.channels.fetch(entity.signupsChannelId)))
@@ -51,16 +55,18 @@ This channel will soon be deleted...`,
           return;
         }
 
-        const signupsMessage: Message =
-          signupsChannel.messages.cache.get(entity.signupsMessageId) ||
-          (await signupsChannel.messages
-            .fetch(entity.signupsMessageId)
-            .catch(() => null));
-        const openForAllMessage: Message =
-          signupsChannel.messages.cache.get(entity.openForAllMessageId) ||
-          (await signupsChannel.messages
-            .fetch(entity.openForAllMessageId)
-            .catch(() => null));
+        const signupsMessage: Message = entity.signupsMessageId
+          ? signupsChannel.messages.cache.get(entity.signupsMessageId) ||
+            (await signupsChannel.messages
+              .fetch(entity.signupsMessageId)
+              .catch(() => null))
+          : null;
+        const openForAllMessage: Message = entity.openForAllMessageId
+          ? signupsChannel.messages.cache.get(entity.openForAllMessageId) ||
+            (await signupsChannel.messages
+              .fetch(entity.openForAllMessageId)
+              .catch(() => null))
+          : null;
 
         if (signupsMessage) {
           signupsMessage.delete().catch(console.error);
@@ -68,7 +74,7 @@ This channel will soon be deleted...`,
         if (openForAllMessage) {
           openForAllMessage.delete().catch(console.error);
         }
-      }, 180000);
+      }, 10000);
     }
   }
 }

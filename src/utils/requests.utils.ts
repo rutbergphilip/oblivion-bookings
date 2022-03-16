@@ -30,7 +30,7 @@ export class RequestUtils {
         allow: ['VIEW_CHANNEL'],
       },
       {
-        id: <string>Global.BOTID,
+        id: <string>Global.BOT_ID,
         allow: adminPermissions,
       },
       {

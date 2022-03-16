@@ -34,7 +34,8 @@ export class MythicPlusRequestCollector {
         );
       case currentQuestion === 2:
         return (
-          isAuthor && ['0', '1', '2', '3'].some((m) => m === message.content)
+          isAuthor &&
+          ['0', '1', '2', '3', '4'].some((m) => m === message.content)
         );
       case currentQuestion === 3:
         return isAuthor && /([a-zA-Z\s]+)/i.test(message.content);
@@ -57,7 +58,7 @@ export class MythicPlusRequestCollector {
     '**What key Level would you like (0-24)**',
     '**How many keys would you like?**',
     "**Select What type of armor you'd like\n0 = Any,\n1 = Cloth,\n2 = Plate,\n3 = Mail,\n4 = Leather**",
-    '**Please type what specific key/keys you would like separated with commas (`,`)**',
+    '**Please type what specific key/keys you would like separated with commas (`,`)\n\nIf any key is fine, type `any`**',
     '**Would you like the key(s) timed or not?\n1 = Yes,\n0 = No**',
     '**Please type your desired payment realms separated with commas (`,`)**',
     '**Do you have any additional notes? If not, type `no`**',
@@ -141,8 +142,8 @@ export class MythicPlusRequestCollector {
         });
 
         setTimeout(() => {
-          this.channel.delete();
-        }, 5000);
+          this.stopRequest();
+        }, 10000);
       } else if (collected.size !== this.questions.length) {
         await processingMessage.edit({
           content: `Process stopped with only ${collected.size} questions out of ${this.questions.length} answered.
@@ -152,20 +153,15 @@ Closing this ticket...`,
         });
 
         setTimeout(() => {
-          this.channel.delete();
+          this.stopRequest();
         }, 10000);
       } else {
-        const requestId = this.bookingMessage.embeds[0].footer.text.replace(
-          '🆔: ',
-          ''
-        );
-
         const messageOptions = await (
-          await new MythicPlusBuilder(requestId).processData(collected)
+          await new MythicPlusBuilder(this.requestId).processData(collected)
         ).build();
 
         const repository = new MythicPlusRequestRepository();
-        const entity = await repository.get(requestId);
+        const entity = await repository.get(this.requestId);
 
         const boostMessage = await (<TextChannel>(
           (this.channel.guild.channels.cache.get(entity.signupsChannelId) ||
@@ -194,14 +190,15 @@ Closing this ticket...`,
         });
 
         setTimeout(async () => {
-          const entity = await repository.get(requestId);
-          const boost = MythicPlusCache.get(requestId);
+          const entity = await repository.get(this.requestId);
+          const boost = MythicPlusCache.get(this.requestId);
           if (!entity.hasStarted && !entity.isTeamTaken) {
             boostMessage.edit({
               content: 'Booking now open for all!',
               embeds: boostMessage.embeds,
-              components:
-                ActionRowBuilder.buildMythicPlusMembersSignupsRow(requestId),
+              components: ActionRowBuilder.buildMythicPlusMembersSignupsRow(
+                this.requestId
+              ),
             });
 
             const openForAllMessage = await boostMessage.channel.send({
@@ -229,7 +226,7 @@ Closing this ticket...`,
               },
             });
           }
-        }, 10000);
+        }, 180000);
       }
     } catch (error) {
       console.error(error);
@@ -241,5 +238,11 @@ Closing this ticket...`,
       (m: Message) => !m.pinned
     );
     await this.channel.bulkDelete(deletable);
+  }
+
+  private stopRequest(): void {
+    this.channel.delete();
+    const repository = new MythicPlusRequestRepository();
+    repository.delete(this.requestId);
   }
 }

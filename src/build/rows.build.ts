@@ -1,4 +1,5 @@
-import { MessageActionRow, MessageButton } from 'discord.js';
+import { Emojis } from './../constants/emojis.enum';
+import { MessageActionRow, MessageButton, MessageSelectMenu } from 'discord.js';
 import { ObjectId } from 'mongodb';
 
 export class ActionRowBuilder {
@@ -12,6 +13,38 @@ export class ActionRowBuilder {
         .setLabel('Alliance')
         .setCustomId('alliance-request')
         .setStyle('PRIMARY'),
+    ]);
+  }
+
+  static buildRequestOptionsRow(): MessageActionRow {
+    return new MessageActionRow().addComponents([
+      new MessageSelectMenu()
+        .setCustomId('request_options')
+        .setPlaceholder('What do you wish to book?')
+        .setMaxValues(1)
+        .addOptions([
+          {
+            label: 'Mythic Plus',
+            value: 'mplus',
+            emoji: Emojis.KEYSTONE,
+          },
+          {
+            label: 'Torghast',
+            value: 'torghast',
+            emoji: Emojis.QUESTION,
+          },
+          // {
+          //   label: 'Raid',
+          //   value: 'raid',
+          //   emoji: Emojis.RAID,
+
+          // },
+          {
+            label: 'PVP',
+            value: 'pvp',
+            emoji: Emojis.PVP,
+          },
+        ]),
     ]);
   }
 

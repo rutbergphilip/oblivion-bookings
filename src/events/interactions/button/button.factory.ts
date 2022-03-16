@@ -21,10 +21,10 @@ export class ButtonFactory {
         case buttonType === Action.REPOST:
           await RepostButton.run(interaction);
           break;
-        case buttonType === Action.HORDE_MPLUS:
+        case buttonType === Action.HORDE:
           await HordeButton.run(interaction);
           break;
-        case buttonType === Action.ALLIANCE_MPLUS:
+        case buttonType === Action.ALLIANCE:
           await AllianceButton.run(interaction);
           break;
         case [

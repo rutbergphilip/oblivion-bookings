@@ -24,10 +24,18 @@ export class RepostButton {
         content: `${Emojis.LOADING} Reposting request...`,
       });
 
-      const signupsChannel = <TextChannel>(
-        (interaction.guild.channels.cache.get(entity.signupsChannelId) ||
-          (await interaction.guild.channels.fetch(entity.signupsChannelId)))
-      );
+      const signupsChannel = entity.signupsChannelId
+        ? <TextChannel>(
+            (interaction.guild.channels.cache.get(entity.signupsChannelId) ||
+              (await interaction.guild.channels.fetch(entity.signupsChannelId)))
+          )
+        : null;
+      if (!signupsChannel) {
+        return interaction.reply({
+          content: `${Emojis.X} You cannot repost a run that has not yet begun.`,
+        });
+      }
+
       const requestChannel = <TextChannel>(
         (interaction.channel.partial
           ? await interaction.channel.fetch()
@@ -37,11 +45,13 @@ export class RepostButton {
       let signupsMessage: Message =
         signupsChannel.messages.cache.get(entity.signupsMessageId) ||
         (await signupsChannel.messages.fetch(entity.signupsMessageId));
-      const openForAllMessage: Message =
-        signupsChannel.messages.cache.get(entity.openForAllMessageId) ||
-        (await signupsChannel.messages
-          .fetch(entity.openForAllMessageId)
-          .catch(() => null));
+
+      const openForAllMessage: Message = entity.openForAllMessageId
+        ? signupsChannel.messages.cache.get(entity.openForAllMessageId) ||
+          (await signupsChannel.messages
+            .fetch(entity.openForAllMessageId)
+            .catch(() => null))
+        : null;
 
       const { embeds } = signupsMessage;
       embeds[0]
