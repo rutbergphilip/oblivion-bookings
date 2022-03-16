@@ -8,7 +8,7 @@ import {
   Client,
   Intents,
   ButtonInteraction,
-  SelectMenuInteraction,
+  SelectMenuInteraction, Interaction,
 } from 'discord.js';
 import { REST } from '@discordjs/rest';
 import { Routes } from 'discord-api-types/v9';
@@ -52,12 +52,13 @@ class Main {
       });
     });
 
-    this.client.on('interactionCreate', async (interaction) => {
+    this.client.on('interactionCreate', async (interaction: Interaction) => {
       const factory = InteractionFactory.get(interaction);
-      if (factory) {
-        await factory.run(
-          <SelectMenuInteraction | ButtonInteraction>interaction
-        );
+      if (factory instanceof ButtonFactory) {
+        await factory.run(interaction as ButtonInteraction);
+      }
+      if (factory instanceof MenuFactory) {
+        await factory.run(interaction as SelectMenuInteraction);
       }
     });
 
